@@ -1,20 +1,18 @@
-'''Embedded URI encoder
+"""Embedded URI encoder
 
 This module includes tools to encode data for use as embedded URI. The output will follow RFC 2397.
 
 Embedded URI used by glTF/glb buffer has to ensure that each component is stored with fixed amount of bytes, determined
 by the componentType configuration.
 
-To ensure our data comply with the required byte alignment, we will first convert Python value to bytes objects of the
-correct size. Then
-
-'''
+We need to ensure accessor.byteOffset and bufferView.byteStride are multiples of 4. Start of each column of a
+matrix accessor must also be aligned to 4-byte boundaries.
+"""
 
 import base64
-import json
 import struct
 
-
+# TODO: Implement byte alignment compliance
 class RFC2397:
     def __init__(self):
         pass
