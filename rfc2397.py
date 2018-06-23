@@ -53,6 +53,9 @@ class RFC2397:
     def encode_list(lst, comptype_id, ele_type):
         """Encode a list to a glTF compliant base64-encoded string
 
+        This now encodes basic list to a base64 encoding compliant with RFC2397.
+        However, many features are still not implemented, such as byte striding and byte offsetting.
+
         :param lst: the list of elements to be converted to a glTF compliant bytearray.
         :param comptype_id: the id that defines the type of each component.
         :param ele_type: a string that specifies the type of each element.
