@@ -12,6 +12,7 @@ matrix accessor must also be aligned to 4-byte boundaries.
 import base64
 import struct
 
+
 # TODO: Implement byte alignment compliance
 class RFC2397:
     def __init__(self):
@@ -35,7 +36,7 @@ class RFC2397:
             "SCALAR": 1,
             "VEC2": 2,
             "VEC3": 3,
-            "VEV4": 4,
+            "VEC4": 4,
             "MAT2": 4,
             "MAT3": 9,
             "MAT4": 16
@@ -50,22 +51,30 @@ class RFC2397:
         return out
 
     @staticmethod
-    def encode_list(lst, comptype_id, ele_type):
-        """Encode a list to a glTF compliant base64-encoded string
+    def get_embedded_uri(data, comptype_id, ele_type):
+        """Encode data to a glTF compliant base64-encoded string
 
-        This now encodes basic list to a base64 encoding compliant with RFC2397.
+        This now encodes a basic list or matrix to a base64 encoding compliant with RFC2397.
+        2D matrix will be flattened for iteration.
         However, many features are still not implemented, such as byte striding and byte offsetting.
 
-        :param lst: the list of elements to be converted to a glTF compliant bytearray.
+        :param data: matrix <list> to be converted to a glTF compliant bytearray.
         :param comptype_id: the id that defines the type of each component.
         :param ele_type: a string that specifies the type of each element.
-        :return: glTF compliant base64-encoded string that represents the input list
+        :return: (str <string>, byte_length <int>) where
+                  str: glTF compliant base64-encoded string that represents the input list
+                  byte_length: the byte length of the data
         """
 
         final_barray = 0
         comp_number = RFC2397._get_compnumber(ele_type)
 
-        for ele in lst:
+        is_matrix = ele_type[:3] == "MAT"
+
+        for ele in data:
+            # If it is a matrix, flatten it
+            if is_matrix:
+                ele = [comp for row in ele for comp in row]
             for i in range(comp_number):
                 bobj = RFC2397._get_comp_bobj(ele if comp_number == 1 else ele[i], comptype_id)
                 if not final_barray:
@@ -73,6 +82,7 @@ class RFC2397:
                 else:
                     final_barray.extend(bobj)
 
-        output = base64.b64encode(final_barray)
+        uri = "data:{mediatype};base64,{data}".format(mediatype="application/octet-stream",
+                                                      data=base64.b64encode(final_barray).decode("ascii"))
 
-        return output
+        return uri, len(final_barray)
