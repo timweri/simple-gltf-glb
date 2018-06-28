@@ -28,42 +28,98 @@ class Converter:
         self.accessors = []
         self.asset = {"version": "2.0"}
 
-    def add_scene(self, name, nodes, nodes_name, mesh_name, mesh):
-        """Add a scene with the specified configurations. Return the index of the scene."""
+        # Map parameter names to the corresponding map and singleton value
+        self.para_name_map = {
+            "scene": (self.scenes_map, True),
+            "node": (self.nodes_map, False),
+            "mesh": (self.meshes_map, True),
+            "primitive": (self.primitives_map, False),
+            "buffer": (self.buffers_map, True),
+            "buffer_view": (self.bufferViews_map, True),
+            "accessor": (self.accessors_map, True)
+        }
+
+    def _build_scene(self, nodes):
+        """Create a scene with the specified properties but do not save it to the object's list of scenes.
+        Return scene <dict>
+        """
         new_scene = {}
 
-        nodes_ind = Converter._fetch_ind(nodes_name, self.nodes_map)
-        nodes_ind += nodes
-        new_scene["nodes"] = nodes_ind
+        new_nodes_ind = Converter._fetch_ind(nodes, self.nodes_map)
+        new_scene["nodes"] = new_nodes_ind
 
-        if not mesh:
-            mesh_ind = Converter._fetch_ind(mesh_name, self.meshes_map, singleton=True)
-            new_scene["mesh"] = mesh_ind
-        else:
-            new_scene["mesh"] = mesh
+        return new_scene
 
+    def create_scene(self, name, nodes):
+        """Create a scene with the specified properties. Return the index of the scene."""
+        new_scene = self._build_scene(nodes=nodes)
         self.scenes.append(new_scene)
 
         # Update scenes map
-        self.scenes_map[name] = len(self.scenes) - 1
+        self.scenes_map[name] = self._last_index(self.scenes)
 
-        return len(self.scenes) - 1
+        return self._last_index(self.scenes)
 
-    def add_mesh(self, name, primitives):
-        """Add a mesh with the specified configurations. Return the index of the mesh."""
-        new_mesh = {"primitives": primitives if primitives else []}
+    def add_to_scene(self, scene_id, nodes):
+        """Add properties to an existing scene. Return the index of the scene."""
+        if isinstance(scene_id, str):
+            scene_id = self.scenes_map[scene_id]
 
+        scene = self.scenes[scene_id]
+
+        new_nodes_ind = self._fetch_ind(names=nodes, ind_map=self.nodes_map)
+
+        scene["nodes"] += new_nodes_ind
+
+        return scene_id
+
+    def _build_mesh(self, primitives):
+        """Create a mesh with the specified properties but do not save it to the object's list of meshes.
+        Return mesh <dict>
+        """
+        new_mesh = {}
+
+        primitives_ind = self._fetch_ind(names=primitives, ind_map=self.primitives_map)
+        new_primitives = [self.primitives[i] for i in primitives_ind]
+
+        new_mesh["primitives"] = new_primitives
+
+        return new_mesh
+
+    def create_mesh(self, name, primitives):
+        """Create a mesh with the specified properties. Return the index of the mesh."""
+        new_mesh = self._build_mesh(primitives=primitives)
         self.meshes.append(new_mesh)
 
         # Update meshes map
-        self.meshes_map[name] = len(self.meshes) - 1
+        self.meshes_map[name] = self._last_index(self.meshes)
 
-        return len(self.meshes) - 1
+        return self._last_index(self.meshes)
 
-    def build_add_primitive(self, name, mesh_ind, mesh_name, attributes, indices, material, mode):
-        """Create a primitive and add it to the specified mesh. Return the primitive <dict>."""
-        assert mesh_ind or mesh_name
+    def add_to_mesh(self, mesh_id, primitives_ind, primitives_names):
+        """Add properties to an existing mesh. Return the index of the mesh."""
+        if isinstance(mesh_id, str):
+            mesh_id = self.scenes_map[mesh_id]
 
+        mesh = self.meshes[mesh_id]
+
+        new_primitives_ind = primitives_ind + self._fetch_ind(names=primitives_names,
+                                                              ind_map=self.primitives_map)
+        new_primitives = [self.primitives[i] for i in new_primitives_ind]
+        mesh["primitives"] += new_primitives
+
+        return mesh_id
+
+    def _build_primitive(self, attributes, indices, material, mode=4):
+        """Create a primitive with the specified properties but do not save it to the object's list of primitives.
+        Return primitive <dict>
+        """
+        new_primitive = {"mode": mode}
+
+
+
+    def create_primitive(self, name, attributes, indices, material, mode):
+        """Create a primitive with the given properties. Return the primitive index."""
         new_primitive = Converter.build_primitive(attributes, indices, material, mode)
 
         self.add_mesh_primitive(name, new_primitive, mesh_ind, mesh_name)
