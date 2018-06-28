@@ -134,14 +134,11 @@ class Converter:
 
         new_primitive = {}
 
-        if attributes:
-            new_primitive["attributes"] = attributes
-        if indices:
-            new_primitive["indices"] = indices
-        if material:
-            new_primitive["material"] = material
-        if mode:
-            new_primitive["mode"] = mode
+        properties_names = ["attributes", "indices", "material", "mode"]
+        properties_vals = [attributes, indices, material, mode]
+
+        for prop_name, prop_val in properties_names, properties_vals:
+            new_primitive[prop_name] = prop_val
 
         return new_primitive
 
