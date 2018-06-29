@@ -289,3 +289,7 @@ class Converter:
                 new_attributes[key] = self.accessors_map[value]
 
         return new_attributes
+
+    @staticmethod
+    def _last_index(lst):
+        return len(lst) - 1
