@@ -280,3 +280,12 @@ class Converter:
         ind_out = filter(None, ind_out)
 
         return list(ind_out)[0] if singleton else ind_out
+
+    def _process_attributes(self, attributes):
+        """Turn all accessor names to their corresponding indices. Return the processed attributes <dict>."""
+        new_attributes = attributes.copy()
+        for key, value in attributes:
+            if isinstance(value, str):
+                new_attributes[key] = self.accessors_map[value]
+
+        return new_attributes
