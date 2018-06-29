@@ -281,14 +281,25 @@ class Converter:
 
         return list(ind_out)[0] if singleton else ind_out
 
-    def _process_attributes(self, attributes):
-        """Turn all accessor names to their corresponding indices. Return the processed attributes <dict>."""
-        new_attributes = attributes.copy()
-        for key, value in attributes:
-            if isinstance(value, str):
-                new_attributes[key] = self.accessors_map[value]
+    def _resolve_accessor(self, input):
+        """Turn all accessor names to their corresponding indices.
+        :param input: takes in a list, a dict a literal
+        :return: a copy of input with all accessor names replaced with the corresponding indices
+        """
+        if isinstance(input, dict):
+            output = input.copy()
+            for key, value in input:
+                if isinstance(value, str):
+                    input[key] = self.accessors_map[value]
+        elif type(input) == list:
+            output = list.copy()
+            output = list(map(lambda x: self.accessors_map[x] if isinstance(x, str) else x, output))
+        elif type(input) == int:
+            output = input
+        elif isinstance(input, str):
+            output = self.accessors_map[input]
 
-        return new_attributes
+        return output
 
     @staticmethod
     def _last_index(lst):
