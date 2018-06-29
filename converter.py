@@ -275,7 +275,7 @@ class Converter:
 
     @staticmethod
     def _fetch_ind(names, ind_map, singleton=False):
-        """Finds all indices given by a index map with the specified names and return a list of their indices"""
+        """Find all indices given by a index map with the specified names and return a list of their indices"""
         ind_out = map(lambda name: ind_map[name], names)
         ind_out = filter(None, ind_out)
 
