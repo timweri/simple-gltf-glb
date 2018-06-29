@@ -114,33 +114,25 @@ class Converter:
         """Create a primitive with the specified properties but do not save it to the object's list of primitives.
         Return primitive <dict>
         """
-        new_primitive = {"mode": mode}
+        new_primitive = {"mode": 4}
 
+        properties_key = ["attributes", "indices", "material"]
+        properties_val = [attributes, indices, material]
+        for key, val in properties_key, properties_val:
+            if val:
+                new_primitive[key] = self._resolve_accessor(val)
 
+        return new_primitive
 
     def create_primitive(self, name, attributes, indices, material, mode):
         """Create a primitive with the given properties. Return the primitive index."""
         new_primitive = Converter.build_primitive(attributes, indices, material, mode)
 
-        self.add_mesh_primitive(name, new_primitive, mesh_ind, mesh_name)
+        self.primitives.append(new_primitive)
 
-        self.primitives_map["name"] = len(self.primitives) - 1
+        self.primitives_map[name] = self._last_index(self.primitives)
 
-        return len(self.primitives) - 1
-
-    @staticmethod
-    def build_primitive(attributes, indices, material, mode):
-        """Create a primitive and return the primitive <dict>."""
-
-        new_primitive = {}
-
-        properties_names = ["attributes", "indices", "material", "mode"]
-        properties_vals = [attributes, indices, material, mode]
-
-        for prop_name, prop_val in properties_names, properties_vals:
-            new_primitive[prop_name] = prop_val
-
-        return new_primitive
+        return self._last_index(self.primitives)
 
     def add_mesh_primitive(self, name, primitive, mesh_ind, mesh_name):
         """Add a given primitive to a mesh."""
