@@ -273,23 +273,25 @@ class Converter:
 
         return list(ind_out)[0] if singleton else ind_out
 
-    def _resolve_accessor(self, input):
-        """Turn all accessor names to their corresponding indices.
+    @staticmethod
+    def _resolve_mapping(input, mapping):
+        """Turn all names to their corresponding indices stored in the given mapping.
         :param input: takes in a list, a dict a literal
+        :param mapping: the dict map
         :return: a copy of input with all accessor names replaced with the corresponding indices
         """
         if isinstance(input, dict):
             output = input.copy()
             for key, value in input:
                 if isinstance(value, str):
-                    input[key] = self.accessors_map[value]
+                    input[key] = mapping[value]
         elif type(input) == list:
             output = list.copy()
-            output = list(map(lambda x: self.accessors_map[x] if isinstance(x, str) else x, output))
+            output = list(map(lambda x: mapping[x] if isinstance(x, str) else x, output))
         elif type(input) == int:
             output = input
         elif isinstance(input, str):
-            output = self.accessors_map[input]
+            output = mapping[input]
 
         return output
 
