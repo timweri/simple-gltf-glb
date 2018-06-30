@@ -48,7 +48,8 @@ class GLTF:
         new_scene = {}
 
         new_nodes_ind = self._resolve_mapping(inp=nodes, mapping=self.nodes_map)
-        new_scene["nodes"] = new_nodes_ind
+        if new_nodes_ind:
+            new_scene["nodes"] = new_nodes_ind
 
         return new_scene
 
@@ -85,8 +86,8 @@ class GLTF:
         properties_values = [camera, children, skin, matrix, mesh, rotation, scale, translation, weights]
         properties_mapping = [self.cameras_map, self.nodes_map, None, None, self.meshes_map, None, None, None, None]
 
-        for key, val, mapping in properties_keys, properties_values, properties_mapping:
-            if val:
+        for key, val, mapping in zip(properties_keys, properties_values, properties_mapping):
+            if val is not None:
                 new_node[key] = self._resolve_mapping(inp=val, mapping=mapping)
 
         return new_node
@@ -154,9 +155,9 @@ class GLTF:
         new_primitive = {}
 
         properties_key = ["attributes", "indices", "material", "mode"]
-        properties_val = [attributes, indices, material, mode]
-        for key, val in properties_key, properties_val:
-            if val:
+        properties_val = [self._resolve_mapping(inp=attributes, mapping=self.accessors_map), indices, material, mode]
+        for key, val in zip(properties_key, properties_val):
+            if val is not None:
                 new_primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
 
         return new_primitive
@@ -182,8 +183,8 @@ class GLTF:
 
         properties_key = ["attributes", "indices", "material", "mode"]
         properties_val = [attributes, indices, material, mode]
-        for key, val in properties_key, properties_val:
-            if val:
+        for key, val in zip(properties_key, properties_val):
+            if val is not None:
                 primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
 
         return primitive_id
@@ -250,9 +251,9 @@ class GLTF:
         properties_keys = ["byteOffset", "normalized", "max", "min"]
         properties_values = [byte_offset, normalized, max_vals, min_vals]
 
-        for prop_key, prop_val in properties_keys, properties_values:
-            if prop_val:
-                new_accessor[prop_key] = prop_val
+        for key, val in zip(properties_keys, properties_values):
+            if val is not None:
+                new_accessor[key] = val
 
         return new_accessor
 
@@ -323,8 +324,8 @@ class GLTF:
         properties_keys = ["target"]
         properties_values = [target]
 
-        for key, val in properties_keys, properties_values:
-            if val:
+        for key, val in zip(properties_keys, properties_values):
+            if val is not None:
                 new_buffer_view[key] = target
 
         return new_buffer_view
@@ -336,11 +337,13 @@ class GLTF:
         :param mapping: the dict map
         :return: a copy of inp with all accessor names replaced with the corresponding indices
         """
-        if isinstance(inp, dict):
+        if not inp:
+            return inp
+        elif isinstance(inp, dict):
             output = inp.copy()
-            for key, value in inp:
+            for key, value in inp.items():
                 if isinstance(value, str):
-                    inp[key] = mapping[value]
+                    output[key] = mapping[value]
         elif type(inp) == list:
             output = inp.copy()
             output = list(map(lambda x: mapping[x] if isinstance(x, str) else x, output))
