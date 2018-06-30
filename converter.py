@@ -45,7 +45,7 @@ class Converter:
         """
         new_scene = {}
 
-        new_nodes_ind = Converter._fetch_ind(nodes, self.nodes_map)
+        new_nodes_ind = self._resolve_mapping(inp=nodes, mapping=self.nodes_map)
         new_scene["nodes"] = new_nodes_ind
 
         return new_scene
@@ -62,12 +62,11 @@ class Converter:
 
     def add_to_scene(self, scene_id, nodes):
         """Add properties to an existing scene. Return the index of the scene."""
-        if isinstance(scene_id, str):
-            scene_id = self.scenes_map[scene_id]
+        scene_id = self._resolve_mapping(inp=scene_id, mapping=self.scenes_map)
 
         scene = self.scenes[scene_id]
 
-        new_nodes_ind = self._fetch_ind(names=nodes, ind_map=self.nodes_map)
+        new_nodes_ind = self._resolve_mapping(inp=nodes, mapping=self.nodes_map)
 
         scene["nodes"] += new_nodes_ind
 
@@ -79,7 +78,7 @@ class Converter:
         """
         new_mesh = {}
 
-        primitives_ind = self._fetch_ind(names=primitives, ind_map=self.primitives_map)
+        primitives_ind = self._resolve_mapping(inp=primitives, mapping=self.primitives_map)
         new_primitives = [self.primitives[i] for i in primitives_ind]
 
         new_mesh["primitives"] = new_primitives
@@ -98,13 +97,10 @@ class Converter:
 
     def add_to_mesh(self, mesh_id, primitives_ind, primitives_names):
         """Add properties to an existing mesh. Return the index of the mesh."""
-        if isinstance(mesh_id, str):
-            mesh_id = self.scenes_map[mesh_id]
-
+        mesh_id = self._resolve_mapping(inp=mesh_id, mapping=self.meshes_map)
         mesh = self.meshes[mesh_id]
 
-        new_primitives_ind = primitives_ind + self._fetch_ind(names=primitives_names,
-                                                              ind_map=self.primitives_map)
+        new_primitives_ind = self._resolve_mapping(inp=primitives, mapping=self.primitives_map)
         new_primitives = [self.primitives[i] for i in new_primitives_ind]
         mesh["primitives"] += new_primitives
 
@@ -120,13 +116,13 @@ class Converter:
         properties_val = [attributes, indices, material]
         for key, val in properties_key, properties_val:
             if val:
-                new_primitive[key] = self._resolve_accessor(val)
+                new_primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
 
         return new_primitive
 
     def create_primitive(self, name, attributes, indices, material, mode):
         """Create a primitive with the given properties. Return the primitive index."""
-        new_primitive = Converter.build_primitive(attributes, indices, material, mode)
+        new_primitive = self.build_primitive(attributes, indices, material, mode)
 
         self.primitives.append(new_primitive)
 
@@ -266,32 +262,24 @@ class Converter:
         return new_buffer_view
 
     @staticmethod
-    def _fetch_ind(names, ind_map, singleton=False):
-        """Find all indices given by a index map with the specified names and return a list of their indices"""
-        ind_out = map(lambda name: ind_map[name], names)
-        ind_out = filter(None, ind_out)
-
-        return list(ind_out)[0] if singleton else ind_out
-
-    @staticmethod
-    def _resolve_mapping(input, mapping):
+    def _resolve_mapping(inp, mapping):
         """Turn all names to their corresponding indices stored in the given mapping.
-        :param input: takes in a list, a dict a literal
+        :param inp: takes in a list, a dict a literal
         :param mapping: the dict map
-        :return: a copy of input with all accessor names replaced with the corresponding indices
+        :return: a copy of inp with all accessor names replaced with the corresponding indices
         """
-        if isinstance(input, dict):
-            output = input.copy()
-            for key, value in input:
+        if isinstance(inp, dict):
+            output = inp.copy()
+            for key, value in inp:
                 if isinstance(value, str):
-                    input[key] = mapping[value]
-        elif type(input) == list:
+                    inp[key] = mapping[value]
+        elif type(inp) == list:
             output = list.copy()
             output = list(map(lambda x: mapping[x] if isinstance(x, str) else x, output))
-        elif type(input) == int:
-            output = input
-        elif isinstance(input, str):
-            output = mapping[input]
+        elif type(inp) == int:
+            output = inp
+        elif isinstance(inp, str):
+            output = mapping[inp]
 
         return output
 
