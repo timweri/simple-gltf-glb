@@ -275,6 +275,7 @@ class GLTF:
 
         new_buffer_view = self._build_bufferview(buffer=self._last_index(self.buffers),
                                                  target=target,
+                                                 byte_offset=byte_offset,
                                                  byte_length=new_buffer["byteLength"])
 
         self.bufferViews.append(new_buffer_view)
@@ -308,7 +309,7 @@ class GLTF:
 
         return new_buffer
 
-    def _build_bufferview(self, buffer, target, byte_length):
+    def _build_bufferview(self, buffer, target, byte_length, byte_offset):
         """Automatically generate a simple bufferView and add it to the glTF structure.
 
         Only buffer and byteLength are supported. byteStride and byteOffset are not yet modifiable.
@@ -318,7 +319,8 @@ class GLTF:
         """
         new_buffer_view = {
             "buffer": self._resolve_mapping(inp=buffer, mapping=self.buffers_map),
-            "byteLength": byte_length
+            "byteLength": byte_length,
+            "byteOffset": byte_offset
         }
 
         properties_keys = ["target"]
