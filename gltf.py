@@ -300,12 +300,14 @@ class GLTF:
                 if isinstance(value, str):
                     inp[key] = mapping[value]
         elif type(inp) == list:
-            output = list.copy()
+            output = inp.copy()
             output = list(map(lambda x: mapping[x] if isinstance(x, str) else x, output))
         elif type(inp) == int:
             output = inp
         elif isinstance(inp, str):
             output = mapping[inp]
+        else:
+            raise ValueError("Unexpected input")
 
         return output
 
