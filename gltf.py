@@ -16,6 +16,8 @@ class GLTF:
         self.scenes = []
         self.nodes_map = {}
         self.nodes = []
+        self.cameras = []
+        self.cameras_map = {}
         self.meshes_map = {}
         self.meshes = []
         self.primitives_map = {}
