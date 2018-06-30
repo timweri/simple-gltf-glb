@@ -147,73 +147,103 @@ class GLTF:
 
         return primitive_id
 
-    def build_add_accessor(self, name, data, ele_type, comptype_id, count, max_vals, min_vals, byte_length, uri, target,
-                           byte_offset=0, normalized=False):
-        """Build an accessor from raw data and generate the appropriate buffer and bufferView.
-        :return: (accessor <dict>, bufferView <dict>, buffer <dict>)
+    def create_accessor_set(self, name, data, ele_type, comptype_id, count, max_vals, min_vals, byte_length, uri,
+                            target, byte_offset, normalized):
+        """Create a set of accessor, bufferView and buffer from raw data. Add them all to the glTF object under the same
+         name.
+        :return: (accessor index, bufferView index, buffer index)
         """
-        assert ele_type and comptype_id and count or data or (byte_length and uri)
+        buffer_id, bufferview_id = self.create_bufferview_set(name=name,
+                                                              data=data,
+                                                              ele_type=ele_type,
+                                                              comptype_id=comptype_id,
+                                                              target=target,
+                                                              byte_length=byte_length,
+                                                              uri=uri)
 
-        new_accessor = {
-            "byteOffset": byte_offset,
-            "componentType": comptype_id,
-            "type": ele_type,
-            "count": count,
-            "normalized": normalized
-        }
+        accessor_id = self.create_accessor(name=name,
+                                           bufferview=bufferview_id,
+                                           byte_offset=byte_offset,
+                                           ele_type=ele_type,
+                                           comptype_id=comptype_id,
+                                           count=count,
+                                           max_vals=max_vals,
+                                           min_vals=min_vals,
+                                           normalized=normalized)
 
-        properties_names = ["max", "min"]
-        properties_values = [max_vals, min_vals]
+        return buffer_id, bufferview_id, accessor_id
 
-        for prop_name, prop_val in properties_names, properties_values:
-            if prop_val:
-                new_accessor[prop_name] = prop_val
-
-        new_buffer, new_buffer_view = self._generate_buffer(name=name,
-                                                            data=data,
-                                                            ele_type=ele_type,
-                                                            comptype_id=comptype_id,
-                                                            target=target,
-                                                            byte_length=byte_length,
-                                                            uri=uri)
-
-        new_accessor["bufferView"] = len(self.bufferViews) - 1
-        new_accessor["byteLength"] = new_buffer["byteLength"]
+    def create_accessor(self, name, bufferview, byte_offset, ele_type, comptype_id, count, max_vals, min_vals,
+                        normalized):
+        """Create an accessor based on an existing bufferView and add the accessor to the glTF object.
+        :return: accessor index
+        """
+        new_accessor = self._build_accessor(bufferview=self._resolve_mapping(inp=bufferview,
+                                                                             mapping=self.bufferViews_map),
+                                            ele_type=ele_type,
+                                            count=count,
+                                            max_vals=max_vals,
+                                            min_vals=min_vals,
+                                            byte_offset=byte_offset,
+                                            comptype_id=comptype_id,
+                                            normalized=normalized)
 
         self.accessors.append(new_accessor)
 
         if name:
-            self.accessors_map[name] = len(self.accessors) - 1
+            self.accessors_map[name] = self._last_index(self.accessors)
 
-        return new_accessor, new_buffer_view, new_buffer
+        return self._last_index(self.accessors)
 
-    def _generate_buffer(self, name, data, ele_type, comptype_id, target, byte_length=None, uri=None):
-        """Build a buffer from raw data and generate a corresponding bufferView and add them both to the glTF object.
+    def _build_accessor(self, bufferview, ele_type, comptype_id, count, max_vals, min_vals, byte_offset, normalized):
+        """Build an accessor based on an existing bufferView.
+        :return: accessor <dict>
+        """
+        new_accessor = {
+            "bufferView": self._resolve_mapping(inp=bufferview, mapping=self.bufferViews_map),
+            "componentType": comptype_id,
+            "type": ele_type,
+            "count": count,
+        }
+
+        properties_keys = ["byteOffset", "normalized", "max", "min"]
+        properties_values = [byte_offset, normalized, max_vals, min_vals]
+
+        for prop_key, prop_val in properties_keys, properties_values:
+            if prop_val:
+                new_accessor[prop_key] = prop_val
+
+        return new_accessor
+
+    def create_bufferview_set(self, name, data, ele_type, comptype_id, target, byte_length=None, uri=None):
+        """Build a pair of buffer and bufferView from raw data and add to the glTF object under the same name.
         If uri is defined, only byte_length and uri are used to build the buffer.
         Otherwise, encode the data according to ele_type and comp_type.
 
-        :return: (buffer <dict>, bufferView <dict>)
+        :return: (buffer index, bufferView index)
         """
-        new_buffer = Converter.build_buffer(data=data,
-                                            ele_type=ele_type,
-                                            comptype_id=comptype_id,
-                                            byte_length=byte_length,
-                                            uri=uri)
+        new_buffer = self._build_buffer(data=data,
+                                        ele_type=ele_type,
+                                        comptype_id=comptype_id,
+                                        byte_length=byte_length,
+                                        uri=uri)
 
         self.buffers.append(new_buffer)
 
+        new_buffer_view = self._build_bufferview(buffer=self._last_index(self.buffers),
+                                                 target=target,
+                                                 byte_length=new_buffer["byteLength"])
+
+        self.bufferViews.append(new_buffer_view)
+
         if name:
-            self.buffers_map[name] = len(self.buffers) - 1
+            self.buffers_map[name] = self._last_index(self.buffers)
+            self.bufferViews_map[name] = self._last_index(self.bufferViews)
 
-        new_buffer_view = self._generate_bufferview(name=name,
-                                                    buffer_index=len(self.buffers) - 1,
-                                                    target=target,
-                                                    byte_length=new_buffer["byteLength"])
-
-        return new_buffer, new_buffer_view
+        return self._last_index(self.buffers), self._last_index(self.bufferViews)
 
     @staticmethod
-    def build_buffer(data, ele_type, comptype_id, byte_length=None, uri=None):
+    def _build_buffer(data, ele_type, comptype_id, byte_length=None, uri=None):
         """Build a buffer from raw data.
         If uri is defined, only byte_length and uri are used to build the buffer.
         Otherwise, encode the data according to ele_type and comp_type.
@@ -235,7 +265,7 @@ class GLTF:
 
         return new_buffer
 
-    def _generate_bufferview(self, name, buffer_index, target, byte_length):
+    def _build_bufferview(self, buffer, target, byte_length):
         """Automatically generate a simple bufferView and add it to the glTF structure.
 
         Only buffer and byteLength are supported. byteStride and byteOffset are not yet modifiable.
@@ -244,17 +274,16 @@ class GLTF:
         :return: bufferView <dict>
         """
         new_buffer_view = {
-            "buffer": buffer_index,
+            "buffer": self._resolve_mapping(inp=buffer, mapping=self.buffers_map),
             "byteLength": byte_length
         }
 
-        if target:
-            new_buffer_view["target"] = target
+        properties_keys = ["target"]
+        properties_values = [target]
 
-        self.bufferViews.append(new_buffer_view)
-
-        if name:
-            self.bufferViews_map[name] = len(self.bufferViews) - 1
+        for key, val in properties_keys, properties_values:
+            if val:
+                new_buffer_view[key] = target
 
         return new_buffer_view
 
