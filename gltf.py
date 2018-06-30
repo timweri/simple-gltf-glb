@@ -5,7 +5,7 @@ file. Currently, for the purpose of simple demonstration, it only supports one s
 Basically it does not do much.
 """
 
-from .rfc2397 import RFC2397
+from rfc2397 import RFC2397
 
 
 # TODO: Make unittest
