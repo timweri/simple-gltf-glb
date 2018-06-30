@@ -354,3 +354,16 @@ class GLTF:
     @staticmethod
     def _last_index(lst):
         return len(lst) - 1
+
+    def to_dict(self):
+        """Compile all properties and return a glTF asset <dict>"""
+        gltf_asset = {}
+        properties_keys = ["scenes", "nodes", "meshes", "buffers", "bufferViews", "accessors", "asset"]
+        properties_vals = [self.scenes, self.nodes, self.meshes, self.buffers, self.bufferViews, self.accessors,
+                           self.asset]
+
+        for key, val in zip(properties_keys, properties_vals):
+            if val:
+                gltf_asset[key] = val
+
+        return gltf_asset
