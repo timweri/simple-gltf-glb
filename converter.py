@@ -95,7 +95,7 @@ class Converter:
 
         return self._last_index(self.meshes)
 
-    def add_to_mesh(self, mesh_id, primitives_ind, primitives_names):
+    def add_to_mesh(self, mesh_id, primitives):
         """Add properties to an existing mesh. Return the index of the mesh."""
         mesh_id = self._resolve_mapping(inp=mesh_id, mapping=self.meshes_map)
         mesh = self.meshes[mesh_id]
@@ -106,14 +106,14 @@ class Converter:
 
         return mesh_id
 
-    def _build_primitive(self, attributes, indices, material, mode=4):
+    def _build_primitive(self, attributes, indices, material, mode):
         """Create a primitive with the specified properties but do not save it to the object's list of primitives.
         Return primitive <dict>
         """
-        new_primitive = {"mode": 4}
+        new_primitive = {}
 
-        properties_key = ["attributes", "indices", "material"]
-        properties_val = [attributes, indices, material]
+        properties_key = ["attributes", "indices", "material", "mode"]
+        properties_val = [attributes, indices, material, mode]
         for key, val in properties_key, properties_val:
             if val:
                 new_primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
@@ -122,7 +122,10 @@ class Converter:
 
     def create_primitive(self, name, attributes, indices, material, mode):
         """Create a primitive with the given properties. Return the primitive index."""
-        new_primitive = self.build_primitive(attributes, indices, material, mode)
+        new_primitive = self._build_primitive(attributes=attributes,
+                                              indices=indices,
+                                              material=material,
+                                              mode=mode)
 
         self.primitives.append(new_primitive)
 
@@ -130,22 +133,19 @@ class Converter:
 
         return self._last_index(self.primitives)
 
-    def add_mesh_primitive(self, name, primitive, mesh_ind, mesh_name):
-        """Add a given primitive to a mesh."""
+    def add_to_primitive(self, primitive_id, attributes, indices, material, mode):
+        """Add properties to an existing primitive. Return the primitive index."""
+        primitive_id = self._resolve_mapping(inp=primitive_id, mapping=self.primitives_map)
 
-        if mesh_name:
-            mesh_ind = self.meshes_map[mesh_name]
+        primitive = self.primitives[primitive_id]
 
-        if mesh_ind < len(self.meshes):
-            if primitive:
-                self.meshes[mesh_ind]["primitives"].append(primitive)
-                if primitive not in self.primitives:
-                    self.primitives.append(primitive)
-                    if name and not self.primitives_map:
-                        self.primitives_map[name] = len(self.primitives) - 1
-            else:
-                primitive_index = self.primitives_map[name]
-                self.meshes[mesh_ind]["primitives"].append(self.primitives[primitive_index])
+        properties_key = ["attributes", "indices", "material", "mode"]
+        properties_val = [attributes, indices, material, mode]
+        for key, val in properties_key, properties_val:
+            if val:
+                primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
+
+        return primitive_id
 
     def build_add_accessor(self, name, data, ele_type, comptype_id, count, max_vals, min_vals, byte_length, uri, target,
                            byte_offset=0, normalized=False):
