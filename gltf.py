@@ -72,6 +72,44 @@ class GLTF:
 
         return scene_id
 
+    def _build_node(self, camera, children, skin, matrix, mesh, rotation, scale, translation, weights):
+        """Create a node.
+        Return node <dict>
+        """
+        new_node = {}
+
+        properties_keys = ["camera", "children", "skin", "matrix", "mesh", "rotation", "scale", "translation",
+                           "weights"]
+        properties_values = [camera, children, skin, matrix, mesh, rotation, scale, translation, weights]
+        properties_mapping = [self.cameras_map, self.nodes_map, None, None, self.meshes_map, None, None, None, None]
+
+        for key, val, mapping in properties_keys, properties_values, properties_mapping:
+            if val:
+                new_node[key] = self._resolve_mapping(inp=val, mapping=mapping)
+
+        return new_node
+
+    def create_node(self, name, camera, children, skin, matrix, mesh, rotation, scale, translation, weights):
+        """Create a node and add it to the glTF object.
+        :return: node index
+        """
+        new_node = self._build_node(camera=camera,
+                                    children=children,
+                                    skin=skin,
+                                    matrix=matrix,
+                                    mesh=mesh,
+                                    rotation=rotation,
+                                    scale=scale,
+                                    translation=translation,
+                                    weights=weights)
+
+        self.nodes.append(new_node)
+
+        if name:
+            self.nodes_map[name] = self._last_index(self.nodes)
+
+        return self._last_index(self.nodes)
+
     def _build_mesh(self, primitives):
         """Create a mesh with the specified properties but do not save it to the object's list of meshes.
         Return mesh <dict>
