@@ -52,7 +52,7 @@ class GLTF:
 
         return new_scene
 
-    def create_scene(self, name, nodes):
+    def create_scene(self, name, nodes=None):
         """Create a scene with the specified properties. Return the index of the scene."""
         new_scene = self._build_scene(nodes=nodes)
         self.scenes.append(new_scene)
@@ -91,7 +91,8 @@ class GLTF:
 
         return new_node
 
-    def create_node(self, name, camera, children, skin, matrix, mesh, rotation, scale, translation, weights):
+    def create_node(self, name, camera=None, children=None, skin=None, matrix=None, mesh=None, rotation=None,
+                    scale=None, translation=None, weights=None):
         """Create a node and add it to the glTF object.
         :return: node index
         """
@@ -160,7 +161,7 @@ class GLTF:
 
         return new_primitive
 
-    def create_primitive(self, name, attributes, indices, material, mode):
+    def create_primitive(self, name, attributes=None, indices=None, material=None, mode=None):
         """Create a primitive with the given properties. Return the primitive index."""
         new_primitive = self._build_primitive(attributes=attributes,
                                               indices=indices,
@@ -187,8 +188,8 @@ class GLTF:
 
         return primitive_id
 
-    def create_accessor_set(self, name, data, ele_type, comptype_id, count, max_vals, min_vals, byte_length, uri,
-                            target, byte_offset, normalized):
+    def create_accessor_set(self, name, ele_type, comptype_id, count, max_vals=None, min_vals=None, byte_length=None,
+                            uri=None, target=None, byte_offset=None, normalized=None, data=None):
         """Create a set of accessor, bufferView and buffer from raw data. Add them all to the glTF object under the same
          name.
         :return: (accessor index, bufferView index, buffer index)
@@ -255,7 +256,8 @@ class GLTF:
 
         return new_accessor
 
-    def create_bufferview_set(self, name, data, ele_type, comptype_id, target, byte_length=None, uri=None):
+    def create_bufferview_set(self, name, data, ele_type, comptype_id, target, byte_length=None, byte_offset=0,
+                              uri=None):
         """Build a pair of buffer and bufferView from raw data and add to the glTF object under the same name.
         If uri is defined, only byte_length and uri are used to build the buffer.
         Otherwise, encode the data according to ele_type and comp_type.
@@ -283,7 +285,7 @@ class GLTF:
         return self._last_index(self.buffers), self._last_index(self.bufferViews)
 
     @staticmethod
-    def _build_buffer(data, ele_type, comptype_id, byte_length=None, uri=None):
+    def _build_buffer(data, ele_type, comptype_id, byte_length, uri):
         """Build a buffer from raw data.
         If uri is defined, only byte_length and uri are used to build the buffer.
         Otherwise, encode the data according to ele_type and comp_type.
