@@ -9,7 +9,7 @@ from .rfc2397 import RFC2397
 
 
 # TODO: Make unittest
-class Converter:
+class GLTF:
     def __init__(self):
         # Initialize objects according to the glTF specs
         self.scenes_map = {}
@@ -150,9 +150,6 @@ class Converter:
     def build_add_accessor(self, name, data, ele_type, comptype_id, count, max_vals, min_vals, byte_length, uri, target,
                            byte_offset=0, normalized=False):
         """Build an accessor from raw data and generate the appropriate buffer and bufferView.
-        Then, add all three properties to the glTF object. All these properties will be stored in the respective lists
-        and mapped to the same key (name) in their respective maps.
-
         :return: (accessor <dict>, bufferView <dict>, buffer <dict>)
         """
         assert ele_type and comptype_id and count or data or (byte_length and uri)
