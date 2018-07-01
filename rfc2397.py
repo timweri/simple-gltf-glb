@@ -92,7 +92,7 @@ class RFC2397:
                 bobj = struct.pack(formatter, *ele)
                 final_barray.extend(bobj)
 
-        byte_stride = ele_size + ele_padding_count
+        byte_stride = ele_size + ele_padding_count if ele_padding_count else None
         byte_length = len(final_barray)
 
         chunk_padding_count = (4 - byte_length % 4) % 4

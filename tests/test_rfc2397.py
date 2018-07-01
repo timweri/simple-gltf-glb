@@ -22,7 +22,7 @@ class TestRFC2397(unittest.TestCase):
                              {
                                  "byteLength": 36,
                                  "byteOffset": 0,
-                                 "byteStride": 12
+                                 "byteStride": None
                              }
                          ])
 
@@ -42,7 +42,7 @@ class TestRFC2397(unittest.TestCase):
                              {
                                  "byteLength": 4,
                                  "byteOffset": 0,
-                                 "byteStride": 1
+                                 "byteStride": None
                              }
                          ])
 
@@ -62,7 +62,7 @@ class TestRFC2397(unittest.TestCase):
                              {
                                  "byteLength": 8,
                                  "byteOffset": 0,
-                                 "byteStride": 8
+                                 "byteStride": None
                              }
                          ])
 
@@ -82,7 +82,7 @@ class TestRFC2397(unittest.TestCase):
                              {
                                  "byteLength": 36,
                                  "byteOffset": 0,
-                                 "byteStride": 18
+                                 "byteStride": None
                              }
                          ])
 
@@ -111,11 +111,11 @@ class TestRFC2397(unittest.TestCase):
                              {
                                  "byteOffset": 0,
                                  "byteLength": 6,
-                                 "byteStride": 2
+                                 "byteStride": None
                              },
                              {
                                  "byteOffset": 8,
                                  "byteLength": 36,
-                                 "byteStride": 12
+                                 "byteStride": None
                              }
                          ])
