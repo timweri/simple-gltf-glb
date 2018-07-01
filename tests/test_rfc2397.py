@@ -6,7 +6,7 @@ class TestRFC2397(unittest.TestCase):
     """Tests for `rfc2397.py`."""
 
     def test_get_embedded_uri1(self):
-        # Taken from https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/TriangleWithoutIndices
+        # Test data taken from https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/TriangleWithoutIndices
         test_data = [{
             "data": [[0, 0, 0], [1, 0, 0], [0, 1, 0]],
             "comptype_id": 5126,
@@ -83,5 +83,39 @@ class TestRFC2397(unittest.TestCase):
                                  "byteLength": 36,
                                  "byteOffset": 0,
                                  "byteStride": 18
+                             }
+                         ])
+
+    def test_get_embedded_uri5(self):
+        # Test data taken from https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Triangle
+        test_data = [
+            {
+                "data": [0, 1, 2],
+                "comptype_id": 5123,
+                "ele_type": "SCALAR",
+                "vertex_attr": False
+            },
+            {
+                "data": [[0, 0, 0], [1, 0, 0], [0, 1, 0]],
+                "comptype_id": 5126,
+                "ele_type": "VEC3",
+                "vertex_attr": True
+            }
+        ]
+        uri, length, buffer_view_data = RFC2397.get_embedded_uri(test_data)
+        self.assertEqual(uri, "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAC"
+                              "APwAAAAA=")
+        self.assertEqual(length, 44)
+        self.assertEqual(buffer_view_data,
+                         [
+                             {
+                                 "byteOffset": 0,
+                                 "byteLength": 6,
+                                 "byteStride": 2
+                             },
+                             {
+                                 "byteOffset": 8,
+                                 "byteLength": 36,
+                                 "byteStride": 12
                              }
                          ])
