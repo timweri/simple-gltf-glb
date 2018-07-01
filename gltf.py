@@ -189,34 +189,77 @@ class GLTF:
 
         return primitive_id
 
-    def create_accessor_set(self, name, ele_type, comptype_id, count, max_vals=None, min_vals=None, byte_length=None,
-                            uri=None, target=None, byte_offset=None, normalized=None, data=None):
-        """Create a set of accessor, bufferView and buffer from raw data. Add them all to the glTF object under the same
-         name.
-        :return: (accessor index, bufferView index, buffer index)
+    def embed_data(self, buffer_name, accessor_data):
+        """Create pairs of accessors and one buffer from raw data. Add them all to the glTF object.
+
+        :param buffer_name: name of the buffer
+        :param accessor_data: [{
+                                 name: name of the bufferView and accessor
+                                 data: raw data
+                                 ele_type: type of each element in data
+                                 count: number of elements in data
+                                 comptype_id: type of each component of each element in data
+                                 max_vals: maximum values of data
+                                 min_vals: minimum values of data
+                                 target: target that GPU buffer should be bound to
+                                 normalized: specifies whether integer data should be normalized
+                                 vertex_attr: specifies whether the data is a vertex attribute
+                              }, ...]
+        :return: (buffer index, accessor indices, bufferView indices)
         """
-        buffer_id, bufferview_id = self.create_bufferview_set(name=name,
-                                                              data=data,
-                                                              ele_type=ele_type,
-                                                              comptype_id=comptype_id,
-                                                              target=target,
-                                                              byte_length=byte_length,
-                                                              uri=uri)
+        accessor_indices = []
+        buffer_view_indices = []
 
-        accessor_id = self.create_accessor(name=name,
-                                           bufferview=bufferview_id,
-                                           byte_offset=byte_offset,
-                                           ele_type=ele_type,
-                                           comptype_id=comptype_id,
-                                           count=count,
-                                           max_vals=max_vals,
-                                           min_vals=min_vals,
-                                           normalized=normalized)
+        buffer_data, buffer_byte_length, buffer_view_data = RFC2397.get_embedded_uri(accessor_data)
 
-        return buffer_id, bufferview_id, accessor_id
+        buffer_index = self._create_buffer(name=buffer_name, uri=buffer_data, byte_length=buffer_byte_length)
 
-    def create_accessor(self, name, bufferview, byte_offset, ele_type, comptype_id, count, max_vals, min_vals,
-                        normalized):
+        bv_required_keys = ["name", "target"]
+        ac_required_keys = ["name", "bufferview", "byte_offset", "ele_type", "comptype_id", "count", "max_vals",
+                            "min_vals", "normalized"]
+        for bv, ac in zip(buffer_view_data, accessor_data):
+            bv_required_args = {key: ac[key] for key in bv_required_keys if key in ac}
+            bv_index = self._create_bufferview(buffer=buffer_index,
+                                               byte_offset=bv["byteOffset"],
+                                               byte_length=bv["byteLength"],
+                                               byte_stride=bv["byteStride"],
+                                               **bv_required_args)
+            buffer_view_indices.append(bv_index)
+
+            ac_required_args = {key: ac[key] for key in ac_required_keys if key in ac}
+            ac_index = self._create_accessor(bufferview=bv_index,
+                                             **ac_required_args)
+            accessor_indices.append(ac_index)
+
+        return buffer_index, accessor_indices, buffer_view_indices
+
+    def _create_buffer(self, name, uri, byte_length):
+        """Add buffer to glTF object
+        :return: buffer index
+        """
+        new_buffer = self._build_buffer(uri=uri, byte_length=byte_length)
+
+        self.buffers.append(new_buffer)
+
+        if name:
+            self.buffers_map[name] = self._last_index(self.buffers)
+
+        return self._last_index(self.buffers)
+
+    @staticmethod
+    def _build_buffer(uri, byte_length):
+        """:return: buffer <dict>
+        """
+        new_buffer = {}
+        properties_keys = ["uri", "byteLength"]
+        properties_values = [uri, byte_length]
+        for key, val in zip(properties_keys, properties_values):
+            if val is not None:
+                new_buffer[key] = val
+        return new_buffer
+
+    def _create_accessor(self, name, bufferview, byte_offset, ele_type, comptype_id, count, max_vals, min_vals,
+                         normalized=False):
         """Create an accessor based on an existing bufferView and add the accessor to the glTF object.
         :return: accessor index
         """
@@ -237,12 +280,15 @@ class GLTF:
 
         return self._last_index(self.accessors)
 
-    def _build_accessor(self, bufferview, ele_type, comptype_id, count, max_vals, min_vals, byte_offset, normalized):
+    @staticmethod
+    def _build_accessor(bufferview, ele_type, comptype_id, count, max_vals, min_vals, byte_offset, normalized):
         """Build an accessor based on an existing bufferView.
         :return: accessor <dict>
         """
+        normalized = None if not normalized else normalized
+
         new_accessor = {
-            "bufferView": self._resolve_mapping(inp=bufferview, mapping=self.bufferViews_map),
+            "bufferView": bufferview,
             "componentType": comptype_id,
             "type": ele_type,
             "count": count,
@@ -257,59 +303,25 @@ class GLTF:
 
         return new_accessor
 
-    def create_bufferview_set(self, name, data, ele_type, comptype_id, target, byte_length=None, byte_offset=0,
-                              uri=None):
-        """Build a pair of buffer and bufferView from raw data and add to the glTF object under the same name.
-        If uri is defined, only byte_length and uri are used to build the buffer.
-        Otherwise, encode the data according to ele_type and comp_type.
-
-        :return: (buffer index, bufferView index)
+    def _create_bufferview(self, name, buffer, target, byte_length, byte_offset, byte_stride):
+        """Add bufferView to glTF object
+        :return: bufferView index
         """
-        new_buffer = self._build_buffer(data=data,
-                                        ele_type=ele_type,
-                                        comptype_id=comptype_id,
-                                        byte_length=byte_length,
-                                        uri=uri)
-
-        self.buffers.append(new_buffer)
-
-        new_buffer_view = self._build_bufferview(buffer=self._last_index(self.buffers),
+        new_buffer_view = self._build_bufferview(buffer=self._resolve_mapping(inp=buffer, mapping=self.buffers_map),
                                                  target=target,
+                                                 byte_length=byte_length,
                                                  byte_offset=byte_offset,
-                                                 byte_length=new_buffer["byteLength"])
+                                                 byte_stride=byte_stride)
 
         self.bufferViews.append(new_buffer_view)
 
         if name:
-            self.buffers_map[name] = self._last_index(self.buffers)
             self.bufferViews_map[name] = self._last_index(self.bufferViews)
 
-        return self._last_index(self.buffers), self._last_index(self.bufferViews)
+        return self._last_index(self.bufferViews)
 
     @staticmethod
-    def _build_buffer(data, ele_type, comptype_id, byte_length, uri):
-        """Build a buffer from raw data.
-        If uri is defined, only byte_length and uri are used to build the buffer.
-        Otherwise, encode the data according to ele_type and comp_type.
-
-        :return: buffer <dict>
-        """
-
-        new_buffer = {}
-
-        if byte_length and uri:
-            new_buffer["byteLength"] = byte_length
-            new_buffer["uri"] = uri
-        elif data and ele_type and comptype_id:
-            new_buffer["uri"], new_buffer["byteLength"] = RFC2397.get_embedded_uri(data=data,
-                                                                                   comptype_id=comptype_id,
-                                                                                   ele_type=ele_type)
-        else:
-            raise ValueError("Illegal arguments")
-
-        return new_buffer
-
-    def _build_bufferview(self, buffer, target, byte_length, byte_offset):
+    def _build_bufferview(buffer, target, byte_length, byte_offset, byte_stride):
         """Automatically generate a simple bufferView and add it to the glTF structure.
 
         Only buffer and byteLength are supported. byteStride and byteOffset are not yet modifiable.
@@ -318,13 +330,13 @@ class GLTF:
         :return: bufferView <dict>
         """
         new_buffer_view = {
-            "buffer": self._resolve_mapping(inp=buffer, mapping=self.buffers_map),
+            "buffer": buffer,
             "byteLength": byte_length,
             "byteOffset": byte_offset
         }
 
-        properties_keys = ["target"]
-        properties_values = [target]
+        properties_keys = ["target", "byteStride"]
+        properties_values = [target, byte_stride]
 
         for key, val in zip(properties_keys, properties_values):
             if val is not None:
