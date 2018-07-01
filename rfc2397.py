@@ -109,8 +109,8 @@ class RFC2397:
 
         :param data: an array of dicts of raw data. Each dict corresponds to one bufferView and should include:
                     - data: the raw data to be encoded
-                    - type: the type of each element in data
-                    - componentType: the type of each component of each element in data
+                    - ele_type: the type of each element in data
+                    - comptype_id: the type of each component of each element in data
                     - vertex_attr: a flag to signal True if the data describes vertex attributes
         :return: (binary buffer blob<bytearray>, byteLength<int>, bufferViews data<list of dicts>)
                   byteLength: the byte length of the data
@@ -121,9 +121,11 @@ class RFC2397:
         final_barray = bytearray()
         current_byte_offset = 0
 
+        required_keys = ["data", "ele_type", "comptype_id", "vertex_attr"]
         for view in data:
+            view_required_args = {key: view[key] for key in required_keys if key in view}
             view_byte_array, view_byte_length, \
-                view_byte_stride, view_byte_offset = RFC2397._generate_chunk(**view, offset=current_byte_offset)
+                view_byte_stride, view_byte_offset = RFC2397._generate_chunk(**view_required_args, offset=current_byte_offset)
 
             final_barray.extend(view_byte_array)
             new_buffer_view_data = {
