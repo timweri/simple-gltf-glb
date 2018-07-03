@@ -1,7 +1,7 @@
 from gltf import GLTF
 import struct
 import json
-from rfc2397 import RFC2397
+from bufferutility import BufferUtility
 
 
 class GLB(GLTF):
@@ -43,7 +43,7 @@ class GLB(GLTF):
 
         cur_byte_offset = len(self.glb_buffer)
 
-        buffer_bin, buffer_bin_length, buffer_view_data = RFC2397.get_binary_buffer(accessor_data, cur_byte_offset)
+        buffer_bin, buffer_bin_length, buffer_view_data = BufferUtility.get_binary_buffer(accessor_data, cur_byte_offset)
 
         bv_required_keys = ["name", "target"]
         ac_required_keys = ["name", "bufferview", "byte_offset", "ele_type", "comptype_id", "count", "max_vals",

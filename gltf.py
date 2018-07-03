@@ -5,7 +5,7 @@ file. Currently, for the purpose of simple demonstration, it only supports one s
 Basically it does not do much.
 """
 
-from rfc2397 import RFC2397
+from bufferutility import BufferUtility
 import json
 
 
@@ -211,7 +211,7 @@ class GLTF:
         accessor_indices = []
         buffer_view_indices = []
 
-        buffer_data, buffer_byte_length, buffer_view_data = RFC2397.get_embedded_uri(accessor_data)
+        buffer_data, buffer_byte_length, buffer_view_data = BufferUtility.get_embedded_uri(accessor_data)
 
         buffer_index = self._create_buffer(name=buffer_name, uri=buffer_data, byte_length=buffer_byte_length)
 

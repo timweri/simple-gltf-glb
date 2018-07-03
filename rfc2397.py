@@ -1,20 +1,15 @@
-"""Embedded URI encoder
+"""glTF/GLB buffer generator
 
-This module includes tools to encode data for use as embedded URI. The output will follow RFC 2397.
-
-Embedded URI used by glTF/glb buffer has to ensure that each component is stored with fixed amount of bytes, determined
-by the componentType configuration.
-
-We need to ensure accessor.byteOffset and bufferView.byteStride are multiples of 4. Start of each column of a
-matrix accessor must also be aligned to 4-byte boundaries.
+This module provides utilities to generate buffer either for use as base64-encoded data URI or as GLB-stored buffer.
+The output of embedded data URI will follow RFC 2397. Both embedded data URI and GLB-stored buffer will follow the
+required data alignment stated in the glTF/GLB 2.0 specifications.
 """
 
 import base64
 import struct
 
 
-# TODO: Implement byte alignment compliance
-class RFC2397:
+class BufferUtility:
     def __init__(self):
         pass
 
@@ -72,9 +67,9 @@ class RFC2397:
         """
         final_barray = bytearray()
 
-        comp_number = RFC2397._get_compnumber(ele_type)
-        comp_size = RFC2397._get_comptype_size(comptype_id)
-        comp_formatter = RFC2397._get_comptype_formatter(comptype_id)
+        comp_number = BufferUtility._get_compnumber(ele_type)
+        comp_size = BufferUtility._get_comptype_size(comptype_id)
+        comp_formatter = BufferUtility._get_comptype_formatter(comptype_id)
         ele_size = comp_size * comp_number
 
         ele_padding_count = (4 - ele_size % 4) % 4 if vertex_attr else 0
@@ -104,7 +99,7 @@ class RFC2397:
         return final_barray, byte_length, byte_stride, byte_offset
 
     @staticmethod
-    def get_binary_buffer(data):
+    def get_binary_buffer(data, byte_offset=0):
         """Encode data to a glTF compliant binary blob
 
         :param data: an array of dicts of raw data. Each dict corresponds to one bufferView and should include:
@@ -112,6 +107,7 @@ class RFC2397:
                     - ele_type: the type of each element in data
                     - comptype_id: the type of each component of each element in data
                     - vertex_attr: a flag to signal True if the data describes vertex attributes
+        :param byte_offset: the initial byteOffset
         :return: (binary buffer blob<bytearray>, byteLength<int>, bufferViews data<list of dicts>)
                   byteLength: the byte length of the data
                   bufferViews data: [{byteLength, byteStride, byteOffset}<dict>, ...] a list of dicts with three
@@ -119,13 +115,14 @@ class RFC2397:
         """
         buffer_view_data = []
         final_barray = bytearray()
-        current_byte_offset = 0
+        current_byte_offset = byte_offset
 
         required_keys = ["data", "ele_type", "comptype_id", "vertex_attr"]
         for view in data:
             view_required_args = {key: view[key] for key in required_keys if key in view}
             view_byte_array, view_byte_length, \
-                view_byte_stride, view_byte_offset = RFC2397._generate_chunk(**view_required_args, offset=current_byte_offset)
+                view_byte_stride, view_byte_offset = BufferUtility._generate_chunk(**view_required_args,
+                                                                                   offset=current_byte_offset)
 
             final_barray.extend(view_byte_array)
             new_buffer_view_data = {
@@ -156,7 +153,7 @@ class RFC2397:
                   bufferViews data: [{byteLength, byteStride, byteOffset}<dict>, ...] a list of dicts with three
                                     properties to define bufferViews
         """
-        final_barray, byte_length, buffer_view_data = RFC2397.get_binary_buffer(data)
+        final_barray, byte_length, buffer_view_data = BufferUtility.get_binary_buffer(data)
 
         uri = "data:{mediatype};base64,{data}".format(mediatype="application/octet-stream",
                                                       data=base64.b64encode(final_barray).decode("ascii"))
