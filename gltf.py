@@ -9,7 +9,7 @@ from rfc2397 import RFC2397
 import json
 
 
-# TODO: Make unittest
+# TODO: add support for material
 class GLTF:
     def __init__(self):
         # Initialize objects according to the glTF specs
