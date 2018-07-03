@@ -6,6 +6,7 @@ Basically it does not do much.
 """
 
 from rfc2397 import RFC2397
+import json
 
 
 # TODO: Make unittest
@@ -386,3 +387,9 @@ class GLTF:
                 gltf_asset[key] = val
 
         return gltf_asset
+
+    def export_gltf(self, path):
+        """Export the glTF asset to a .gltf file
+        """
+        with open(path, 'w') as gltf_f:
+            json.dump(self.to_dict(), gltf_f)
