@@ -51,7 +51,8 @@ class GLB(GLTF):
 
         cur_byte_offset = len(self.glb_buffer)
 
-        buffer_bin, buffer_bin_length, buffer_view_data = BufferUtility.get_binary_buffer(accessor_data, cur_byte_offset)
+        buffer_bin, buffer_bin_length, buffer_view_data = BufferUtility.get_binary_buffer(accessor_data,
+                                                                                          cur_byte_offset)
 
         bv_required_keys = ["name", "target"]
         ac_required_keys = ["name", "bufferview", "byte_offset", "ele_type", "comptype_id", "count", "max_vals",
@@ -123,7 +124,7 @@ class GLB(GLTF):
 
         # Readd the empty GLB-stored buffer
         if len(self.glb_buffer) == 0:
-            self.buffers = [{"byteLength":0}] + self.buffers
+            self.buffers = [{"byteLength": 0}] + self.buffers
             for view in self.bufferViews:
                 view["buffer"] += 1
 
