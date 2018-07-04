@@ -31,7 +31,7 @@ class GLTF:
         self.bufferViews = []
         self.accessors_map = {}
         self.accessors = []
-        self.asset = {"version": "2.0"}
+        self.asset = {"version": "2.0", "generator": "timweri.simple-gltf-glb"}
 
         # Map parameter names to the corresponding map and singleton value
         self.para_name_map = {
