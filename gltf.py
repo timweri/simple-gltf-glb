@@ -19,6 +19,8 @@ class GLTF:
         self.nodes = []
         self.cameras = []
         self.cameras_map = {}
+        self.materials = []
+        self.materials_map = {}
         self.meshes_map = {}
         self.meshes = []
         self.primitives_map = {}
@@ -224,6 +226,64 @@ class GLTF:
                 primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
 
         return primitive_id
+
+    # ---------------------------------------------------------------------
+    # MATERIAL METHODS:
+    # ---------------------------------------------------------------------
+
+    @staticmethod
+    def _build_material(pbrmr, emissive):
+        """Build a material
+
+        :return: material <dict>
+        """
+        new_material = {}
+
+        properties_keys = ["pbrMetallicRoughness", "emissiveFactor"]
+        properties_vals = [pbrmr, emissive]
+
+        for key, val in zip(properties_keys, properties_vals):
+            if val is not None:
+                new_material[key] = val
+
+        return new_material
+
+    def create_material(self, name, pbmr=None, emissive=None):
+        """Create a material and add it to the glTF object.
+
+        :param pbmr: metallic-roughness material model <dict>
+        :param emissive: controls color and intensity of the light being emitted by the material <list>
+        :return: material index
+        """
+        new_material = self._build_material(pbmr, emissive)
+
+        self.materials.append(new_material)
+
+        if name:
+            self.materials_map[name] = self._last_index(self.materials)
+
+        return self._last_index(self.materials)
+
+    @staticmethod
+    def build_pbrmr(base_color_fac=None, metallic_fac=None, roughness_fac=None):
+        """Build a metallic-roughness material model
+
+        :param base_color_fac: baseColorFactor e.g. [ 1.0, 1.0, 0.5, 1.0 ]
+        :param metallic_fac: metallicFactor e.g. 1
+        :param roughness_fac: roughnessFactor e.g. 1
+
+        :return: metallic-roughness material model <dict>
+        """
+        new_pbrmr = {}
+
+        properties_keys = ["baseColorFactor", "metallicFactor", "roughnessFactor"]
+        properties_vals = [base_color_fac, metallic_fac, roughness_fac]
+
+        for key, val in zip(properties_keys, properties_vals):
+            if val is not None:
+                new_pbrmr[key] = val
+
+        return new_pbrmr
 
     # ---------------------------------------------------------------------
     # BUFFER DATA METHODS:
