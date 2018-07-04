@@ -42,6 +42,10 @@ class GLTF:
             "accessor": (self.accessors_map, True)
         }
 
+    # ---------------------------------------------------------------------
+    # SCENE METHODS:
+    # ---------------------------------------------------------------------
+
     def _build_scene(self, nodes):
         """Create a scene with the specified properties but do not save it to the object's list of scenes.
         Return scene <dict>
@@ -75,6 +79,10 @@ class GLTF:
         scene["nodes"] += new_nodes_ind
 
         return scene_id
+
+    # ---------------------------------------------------------------------
+    # NODE METHODS:
+    # ---------------------------------------------------------------------
 
     def _build_node(self, camera, children, skin, matrix, mesh, rotation, scale, translation, weights):
         """Create a node.
@@ -114,6 +122,10 @@ class GLTF:
             self.nodes_map[name] = self._last_index(self.nodes)
 
         return self._last_index(self.nodes)
+
+    # ---------------------------------------------------------------------
+    # MESH METHODS:
+    # ---------------------------------------------------------------------
 
     def _build_mesh(self, primitives):
         """Create a mesh with the specified properties but do not save it to the object's list of meshes.
@@ -189,6 +201,10 @@ class GLTF:
                 primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
 
         return primitive_id
+
+    # ---------------------------------------------------------------------
+    # BUFFER DATA METHODS:
+    # ---------------------------------------------------------------------
 
     def embed_data(self, buffer_name, accessor_data):
         """Create pairs of accessors and one buffer from raw data. Add them all to the glTF object.
@@ -345,6 +361,10 @@ class GLTF:
 
         return new_buffer_view
 
+    # ---------------------------------------------------------------------
+    # UTILITY METHODS:
+    # ---------------------------------------------------------------------
+
     @staticmethod
     def _resolve_mapping(inp, mapping):
         """Turn all names to their corresponding indices stored in the given mapping.
@@ -374,6 +394,10 @@ class GLTF:
     @staticmethod
     def _last_index(lst):
         return len(lst) - 1
+
+    # ---------------------------------------------------------------------
+    # EXPORT METHODS:
+    # ---------------------------------------------------------------------
 
     def to_dict(self):
         """Compile all properties and return a glTF asset <dict>"""
