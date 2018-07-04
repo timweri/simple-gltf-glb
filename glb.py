@@ -110,17 +110,17 @@ class GLB(GLTF):
 
         gltf_asset_dict = self.to_dict()
         json_chunk_data = json.dumps(gltf_asset_dict, separators=(',', ':'))
+
+        # Pad with trailing spaces (0x20) to satisfy alignment requirements
+        if len(json_chunk_data) % 4:
+            json_chunk_data += (4 - len(json_chunk_data) % 4) * " "
+
         json_chunk_data_length = len(json_chunk_data)
 
         json_chunk = bytearray()
         json_chunk.extend(struct.pack("<I", json_chunk_data_length))  # u32int
         json_chunk.extend(struct.pack("<4s", self.JSON_CHUNK_TYPE))  # u32int
         json_chunk.extend(bytes(json_chunk_data, "utf-8"))
-
-        # Pad with trailing spaces (0x20) to satisfy alignment requirements
-        if json_chunk_data_length % 4:
-            for i in range(4 - json_chunk_data_length % 4):
-                json_chunk.extend(b'\x20')
 
         # Readd the empty GLB-stored buffer
         if len(self.glb_buffer) == 0:
