@@ -1,3 +1,10 @@
+"""Converters to build glb files
+
+Extending the glTF builder, This module contains converters that convert/encode raw geometric data into data that can be
+used to build a glb file. This is just a simple demonstration of a glTF builder. Not all features are supported, such as
+animation, skinning, camera, and texture.
+"""
+
 from gltf import GLTF
 import struct
 import json
@@ -36,6 +43,7 @@ class GLB(GLTF):
                                  normalized: specifies whether integer data should be normalized
                                  vertex_attr: specifies whether the data is a vertex attribute
                               }, ...]
+
         :return: accessor indices, bufferView indices
         """
         accessor_indices = []
@@ -81,6 +89,7 @@ class GLB(GLTF):
 
     def _build_header(self, total_length):
         """Build the 12-byte header chunk
+
         :return: a 12-byte binary object
         """
         header = struct.pack("<III", self.MAGIC, self.VERSION, total_length)
@@ -89,6 +98,7 @@ class GLB(GLTF):
 
     def _build_json_chunk(self):
         """Build the padded JSON chunk
+
         :return: the chunk <bytearray>
         """
         # No GLB-stored buffer if BIN chunk is empty
@@ -121,6 +131,7 @@ class GLB(GLTF):
 
     def _build_bin_chunk(self):
         """Build the padded Binary chunk
+
         :return: the chunk <bytearray>
         """
         bin_chunk = bytearray()
