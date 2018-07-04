@@ -409,7 +409,7 @@ class GLTF:
 
         return new_accessor
 
-    def _create_bufferview(self, name, buffer, target, byte_length, byte_offset, byte_stride):
+    def _create_bufferview(self, name, buffer, byte_length, byte_offset, byte_stride, target=None):
         """Add bufferView to glTF object
 
         :return: bufferView index
