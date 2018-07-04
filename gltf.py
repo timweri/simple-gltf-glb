@@ -1,8 +1,8 @@
-"""Converters to build glTF/glb files
+"""Converters to build glTF files
 
-This module contains converters that convert/encode raw geometric data into data that can be used to build a glTF or glb
-file. Currently, for the purpose of simple demonstration, it only supports one scene, one node, one mesh, one buffer,...
-Basically it does not do much.
+This module contains converters that convert/encode raw geometric data into data that can be used to build a glTF file.
+This is just a simple demonstration of a glTF builder. Not all features are supported, such as animation, skinning,
+camera, and texture.
 """
 
 from bufferutility import BufferUtility
@@ -48,7 +48,8 @@ class GLTF:
 
     def _build_scene(self, nodes):
         """Create a scene with the specified properties but do not save it to the object's list of scenes.
-        Return scene <dict>
+
+        :return: scene <dict>
         """
         new_scene = {}
 
@@ -59,7 +60,10 @@ class GLTF:
         return new_scene
 
     def create_scene(self, name, nodes=None):
-        """Create a scene with the specified properties. Return the index of the scene."""
+        """Create a scene with the specified properties.
+
+        :return: scene index
+        """
         new_scene = self._build_scene(nodes=nodes)
         self.scenes.append(new_scene)
 
@@ -69,7 +73,10 @@ class GLTF:
         return self._last_index(self.scenes)
 
     def add_to_scene(self, scene_id, nodes):
-        """Add properties to an existing scene. Return the index of the scene."""
+        """Add properties to an existing scene.
+
+        :return: scene index
+        """
         scene_id = self._resolve_mapping(inp=scene_id, mapping=self.scenes_map)
 
         scene = self.scenes[scene_id]
@@ -86,7 +93,8 @@ class GLTF:
 
     def _build_node(self, camera, children, skin, matrix, mesh, rotation, scale, translation, weights):
         """Create a node.
-        Return node <dict>
+
+        :return: node <dict>
         """
         new_node = {}
 
@@ -104,6 +112,7 @@ class GLTF:
     def create_node(self, name, camera=None, children=None, skin=None, matrix=None, mesh=None, rotation=None,
                     scale=None, translation=None, weights=None):
         """Create a node and add it to the glTF object.
+
         :return: node index
         """
         new_node = self._build_node(camera=camera,
@@ -129,7 +138,8 @@ class GLTF:
 
     def _build_mesh(self, primitives):
         """Create a mesh with the specified properties but do not save it to the object's list of meshes.
-        Return mesh <dict>
+
+        :return: mesh <dict>
         """
         new_mesh = {}
 
@@ -141,7 +151,10 @@ class GLTF:
         return new_mesh
 
     def create_mesh(self, name, primitives):
-        """Create a mesh with the specified properties. Return the index of the mesh."""
+        """Create a mesh with the specified properties.
+
+        :return: mesh index.
+        """
         new_mesh = self._build_mesh(primitives=primitives)
         self.meshes.append(new_mesh)
 
@@ -151,7 +164,10 @@ class GLTF:
         return self._last_index(self.meshes)
 
     def add_to_mesh(self, mesh_id, primitives):
-        """Add properties to an existing mesh. Return the index of the mesh."""
+        """Add properties to an existing mesh.
+
+        :return: mesh index
+        """
         mesh_id = self._resolve_mapping(inp=mesh_id, mapping=self.meshes_map)
         mesh = self.meshes[mesh_id]
 
@@ -163,7 +179,8 @@ class GLTF:
 
     def _build_primitive(self, attributes, indices, material, mode):
         """Create a primitive with the specified properties but do not save it to the object's list of primitives.
-        Return primitive <dict>
+
+        :return: primitive <dict>
         """
         new_primitive = {}
 
@@ -176,7 +193,10 @@ class GLTF:
         return new_primitive
 
     def create_primitive(self, name, attributes=None, indices=None, material=None, mode=None):
-        """Create a primitive with the given properties. Return the primitive index."""
+        """Create a primitive with the given properties.
+
+        :return: primitive index.
+        """
         new_primitive = self._build_primitive(attributes=attributes,
                                               indices=indices,
                                               material=material,
@@ -189,7 +209,10 @@ class GLTF:
         return self._last_index(self.primitives)
 
     def add_to_primitive(self, primitive_id, attributes, indices, material, mode):
-        """Add properties to an existing primitive. Return the primitive index."""
+        """Add properties to an existing primitive.
+
+        :return: primitive index.
+        """
         primitive_id = self._resolve_mapping(inp=primitive_id, mapping=self.primitives_map)
 
         primitive = self.primitives[primitive_id]
@@ -222,6 +245,7 @@ class GLTF:
                                  normalized: specifies whether integer data should be normalized
                                  vertex_attr: specifies whether the data is a vertex attribute
                               }, ...]
+
         :return: (buffer index, accessor indices, bufferView indices)
         """
         accessor_indices = []
@@ -252,6 +276,7 @@ class GLTF:
 
     def _create_buffer(self, name, uri, byte_length):
         """Add buffer to glTF object
+
         :return: buffer index
         """
         new_buffer = self._build_buffer(uri=uri, byte_length=byte_length)
@@ -265,7 +290,9 @@ class GLTF:
 
     @staticmethod
     def _build_buffer(uri, byte_length):
-        """:return: buffer <dict>
+        """Build a buffer
+
+        :return: buffer <dict>
         """
         new_buffer = {}
         properties_keys = ["uri", "byteLength"]
@@ -278,6 +305,7 @@ class GLTF:
     def _create_accessor(self, name, bufferview, byte_offset, ele_type, comptype_id, count, max_vals, min_vals,
                          normalized=False):
         """Create an accessor based on an existing bufferView and add the accessor to the glTF object.
+
         :return: accessor index
         """
         new_accessor = self._build_accessor(bufferview=self._resolve_mapping(inp=bufferview,
@@ -300,6 +328,7 @@ class GLTF:
     @staticmethod
     def _build_accessor(bufferview, ele_type, comptype_id, count, max_vals, min_vals, byte_offset, normalized):
         """Build an accessor based on an existing bufferView.
+
         :return: accessor <dict>
         """
         normalized = None if not normalized else normalized
@@ -322,6 +351,7 @@ class GLTF:
 
     def _create_bufferview(self, name, buffer, target, byte_length, byte_offset, byte_stride):
         """Add bufferView to glTF object
+
         :return: bufferView index
         """
         new_buffer_view = self._build_bufferview(buffer=self._resolve_mapping(inp=buffer, mapping=self.buffers_map),
@@ -368,8 +398,10 @@ class GLTF:
     @staticmethod
     def _resolve_mapping(inp, mapping):
         """Turn all names to their corresponding indices stored in the given mapping.
+
         :param inp: takes in a list, a dict a literal
         :param mapping: the dict map
+
         :return: a copy of inp with all accessor names replaced with the corresponding indices
         """
         if not inp:
