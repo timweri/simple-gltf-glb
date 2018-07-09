@@ -1,4 +1,4 @@
-# Cấu trúc glTF/glB căn bản
+# Cấu Trúc glTF/glB Căn Bản
 *Version 2.0*
 
 Doc này dựa hoàn toàn trên thông tin tại doc thông số glTF chính thức tại [đây](https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md). Doc này không phải là bản dịch hoàn chỉnh của doc gốc. Chỉ có thông tin cần thiết cho dự án 3D mới được dịch và demo trong doc. Song ngữ sẽ được dùng để tránh làm mất nghĩa của doc gốc.
@@ -36,42 +36,39 @@ Author and translator: TimWeri
 Original documentation - Last Updated: June 9, 2017
 This documentation - Last Updated: June 29, 2018
 
-# Contents
+# Nội Dung
 
-* [Introduction](#introduction)
+* [Giới thiệu](#introduction)
   * [Motivation](#motivation)
-  * [glTF Basics](#gltf-basics)
+  * [glTF Cơ Bản](#gltf-basics)
   * [Design Goals](#design-goals)
   * [Versioning](#versioning)
-  * [File Extensions and MIME Types](#file-extensions-and-mime-types)
-  * [JSON Encoding](#json-encoding)
+  * [Đuôi File và MIME Types](#file-extensions-and-mime-types)
+  * [Mã Hoá JSON](#json-encoding)
   * [URIs](#uris)
 * [Concepts](#concepts)
   * [Asset](#asset)
-  * [Indices and Names](#indices-and-names)
-  * [Coordinate System and Units](#coordinate-system-and-units)
+  * [Indices và Names](#indices-and-names)
+  * [Hệ Toạ Độ và Đơn vị](#coordinate-system-and-units)
   * [Scenes](#scenes)
-    * [Nodes and Hierarchy](#nodes-and-hierarchy)
+    * [Hệ Thống Thứ Bậc Node](#nodes-and-hierarchy)
     * [Transformations](#transformations)
-  * [Binary Data Storage](#binary-data-storage)
-    * [Buffers and Buffer Views](#buffers-and-buffer-views)
+  * [Lưu Trũ Dữ Liệu](#binary-data-storage)
+    * [Buffers và Buffer Views](#buffers-and-buffer-views)
       * [GLB-stored Buffer](#glb-stored-buffer)
     * [Accessors](#accessors)
-        * [Floating-Point Data](#floating-point-data)
-        * [Accessor Element Size](#accessor-element-size)
-        * [Accessors Bounds](#accessors-bounds)
-        * [Sparse Accessors](#sparse-accessors)
-    * [Data Alignment](#data-alignment)   
+        * [Dữ Liệu Floating-Point](#floating-point-data)
+        * [Kích Cỡ Phần Tử Của Accessor](#accessor-element-size)
+        * [Giới Hạn Accessor](#accessors-bounds)
+        * ~~Sparse Accessors~~
+    * [Canh Chỉnh Dữ Liệu](#data-alignment)   
   * [Geometry](#geometry)
     * [Meshes](#meshes)
       * [Tangent-space definition](#tangent-space-definition)
       * ~~Morph Targets~~
     * ~~Skins~~
     * [Instantiation](#instantiation)
-  * [Texture Data](#texture-data)
-    * [Textures](#textures)
-    * [Images](#images)
-    * [Samplers](#samplers)
+  * ~~Texture Data~~
   * [Materials](#materials)
     * [Metallic-Roughness Material](#metallic-roughness-material)
     * [Additional Maps](#additional-maps)
@@ -81,7 +78,7 @@ This documentation - Last Updated: June 29, 2018
     * [Point and Line Materials](#point-and-line-materials)
   * [Cameras](#cameras)
     * [Projection Matrices](#projection-matrices)
-  * [Animations](#animations)
+  * ~~Animations~~
   * [Specifying Extensions](#specifying-extensions)
 * [GLB File Format Specification](#glb-file-format-specification)
   * [File Extension](#file-extension)
@@ -120,13 +117,13 @@ glTF solves these problems by providing a vendor- and runtime-neutral format tha
 
 glTF assets là file JSON có hỗ trợ dữ liệu ngoài. Cụ thể là một glTF asset được tạo nên bởi:
 
-* Một file cấu trúc JSON (`.gltf`) miêu tả một đầy đủ thông tin về scene: node hierarchy, materials, cameras, cùng với dữ liệu về meshes, animations, và những phần kah1c
-* Binary files (`.bin`) containing geometry and animation data, and other buffer-based data
-* Image files (`.jpg`, `.png`) for textures
+* Một file cấu trúc JSON (`.gltf`) miêu tả một đầy đủ thông tin về scene: node hierarchy, materials, cameras, cùng với dữ liệu về meshes, animations, và những phần khác
+* Binary files (`.bin`) dùng để chứa dữ liệu hình học, animation hay những dữ liệu buffer khác
+* Hình ảnh (`.jpg`, `.png`) làm texture
 
-Assets defined in other formats, such as images, may be stored in external files referenced via URI, stored side-by-side in GLB container, or embedded directly into the JSON using [data URIs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs).
+Asset dưới dạng khác như hình ảnh có thể được chứa ở file riêng và dùng thông qua URI, chưa sát nhau trong GLB, hoặc gắn thẳng trong JSON bằng [data URIs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs).
 
-Valid glTF asset must specify its version.
+glTF asset hợp lệ bắt buộc phải khai báo version.
 
 <p align="center">
 <img src="figures/files.png" width="50%" />
@@ -171,25 +168,26 @@ Major version updates are not expected to be compatible with previous versions.
 
 ## JSON Encoding
 
-To simplify client-side implementation, glTF has additional restrictions on JSON format and encoding.
+Để đơn giản hoá việc ứng dụng, glTF áp dụng thêm một số quy tắc cho cấu trúc JSON và mã hoá.
 
-1. JSON must use UTF-8 encoding without BOM.
-   > **Implementation Note:** glTF exporters must not add a byte order mark to the beginning of JSON text. In the interests of interoperability, client implementations may ignore the presence of a byte order mark rather than treating it as an error. See [RFC8259, section 8](https://tools.ietf.org/html/rfc8259#section-8) for more information.
+1. JSON phải dùng UTF-8 và không có BOM.
+   > **Implementation Note:** glTF exporter không được thêm 1 byte order mark ở đầu chuỗi text JSON. Để tăng sự tương thích, ứng dụng nên làm lơ BOM thay vì báo lỗi. Xem thêm tại [RFC8259, section 8](https://tools.ietf.org/html/rfc8259#section-8).
 
-2. All strings defined in this spec (properties names, enums) use only ASCII charset and must be written as plain text, e.g., `"buffer"` instead of `"\u0062\u0075\u0066\u0066\u0065\u0072"`.
+2. Mọi chuỗi chỉ được dùng ký tự ASCII (trong thuộc tính như names, enums) và phải được viết bằng plain text, e.g., `"buffer"` thay vì `"\u0062\u0075\u0066\u0066\u0065\u0072"`.
 
-   > **Implementation Note:** This allows generic glTF client implementations to not have full Unicode support. Application-specific strings (e.g., values of `"name"` properties or content of `extras` fields) may use any symbols.
-3. Names (keys) within JSON objects must be unique, i.e., duplicate keys aren't allowed.
+   > **Implementation Note:** Làm vậy thì sẽ cho phép ứng dụng không hỗ trợ Unicode hoàn chỉnh dùng glTF. Chuỗi riêng của ứng dụng (như là giá trị của thuộc tính `"name"` hay nội dung của `extras`) có thể dùng bất kỳ ký tự nào. 
+
+3. Key trong JSON phải là duy nhất. Không được dùng key giống nhau trong một đối tượng. Ví dụ, `primitives` không được có hai `"POSITION"`.
 
 ## URIs
 
-glTF uses URIs to reference buffers and image resources. These URIs may point to external resources or be data URIs that embed resources in the JSON. Embedded resources use "data" URI scheme ([RFC2397](https://tools.ietf.org/html/rfc2397)).
+glTF dùng URIS để trỏ tới buffers và hình ảnh. URIs có thể trỏ đến dữ liệu bên ngoài hoặc có thể chính nó chứa dữ liệu (data URI). Data URI dùng chuẩn dữ liệu([RFC2397](https://tools.ietf.org/html/rfc2397)).
  
  > **Implementation Note:** Data URIs could be [decoded with JavaScript](https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding) or consumed directly by web browsers in HTML tags.
 
-Client implementations are required to support only embedded resources and relative external references (in a sense of [RFC3986](https://tools.ietf.org/html/rfc3986#section-4.2)). Clients are free to support other schemes (such as `http://`) depending on expected usage.
+Ứng dụng phải hỗ trợ ít nhất tài nguyên đính dạng base64 và tài nguyên ngoài có đường dẫn tương đối (như trong [RFC3986](https://tools.ietf.org/html/rfc3986#section-4.2)). Việc hỗ trợ những loại tài nguyên khác là tuỳ vào ứng dụng. (như là  `http://`).
 
- > **Implementation Note:** This allows the application to decide the best approach for delivery: if different assets share many of the same geometries, animations, or textures, separate files may be preferred to reduce the total amount of data requested. With separate files, applications can progressively load data and do not need to load data for parts of a model that are not visible. If an application cares more about single-file deployment, embedding data may be preferred even though it increases the overall size due to base64 encoding and does not support progressive or on-demand loading. Alternatively, an asset could use GLB container to store JSON and binary data in one file without base64 encoding. See [GLB File Format Specification](#glb-file-format-specification) for details.
+ > **Implementation Note:** Làm vậy sẽ cho phép ứng dụng quyết định cách tốt nhất để truyền dữ liệu: nếu nhiều asset dùng chung tài nguyên thì chia ra nhiều file tài nguyên sẽ giảm lượng dữ liệu request. Với nhiều file riêng biệt thì ứng dụng có thể load dữ liệu theo thứ tự tối ưu và tránh load dữ liệu  cho phần mà không nhìn thấy được. Nếu ứng dụng ưu tiên việc ít file hơn thì nên đính dữ liệu vào JSON mặc dù làm vậy sẽ tăng kích cỡ file và không hỗ trợ việc kiểm soát thứ tự load. Ngoài ra, có thể dùng GLB container để chứa chung JSON và dữ liệu binary mà không cần base64. Xem [Cấu Trúc File GLB](#glb-file-format-specification) để biết thêm.
 
 # Concepts
 
@@ -200,7 +198,7 @@ The top-level arrays in a glTF asset.  See the <a href="#properties-reference">P
 
 ## Asset
 
-Each glTF asset must have an `asset` property. In fact, it's the only required top-level property for JSON to be a valid glTF. The `asset` object must contain glTF version which specifies the target glTF version of the asset. Additionally, an optional `minVersion` property can be used to specify the minimum glTF version support required to load the asset. The `minVersion` property allows asset creators to specify a minimum version that a client implementation must support in order to load the asset. This is very similar to the `extensionsRequired` concept, where an asset should only be loaded if the client supports the specified extension. Additional metadata can be stored in optional properties such as `generator` or `copyright`.  For example,
+Mỗi glTF asset phải có thuộc tính `asset`. Đây là thuộc tính cấp trên bắt buộc duy nhất để một cấu trúc JSON được cho là một cấu trúc glTF hợp lệ. `asset` phải khai báo version của glTF. `minVersion` cũng có thể được dùng để khai báo phiên bản glTF tương thích thấp nhất. Nhưng thông tin thêm `asset` có thể chứa là `generator` hoặc `copyright`. Ví dụ,
 
 ```json
 {
@@ -212,7 +210,7 @@ Each glTF asset must have an `asset` property. In fact, it's the only required t
 }
 ```
 
-> **Implementation Note:** Client implementations should first check whether a `minVersion` property is specified and ensure both major and minor versions can be supported. If no `minVersion` is specified, then clients should check the `version` property and ensure the major version is supported. Clients that load [GLB format](#glb-file-format-specification) should also check for the `minVersion` and `version` properties in the JSON chunk as the version specified in the GLB header only refers to the GLB container version.
+> **Implementation Note:** Đầu tiên, ứng dụng nên kiểm tra thuộc tính `minVersion` để đảm bảo tính tương thích. Nếu không có `minVersion` thì sẽ kiểm tra `version` để đảm bảo version quan trọng được hỗ trợ. Ứng dụng load [cấu trúc GLB](#glb-file-format-specification) cũng nên kiểm tra `minVersion` và `version` cả trong chunk JSON và chunk GLB header vì version trong GLB header chỉ là version của container.
 
 
 ## Indices and Names
@@ -295,7 +293,7 @@ Khi mà `scene` bị bỏ trống thì sẽ không hiển thị gì cả lúc lo
 }
 ```
 
-### Nodes and Hierarchy
+### Hệ Thóng Thứ Bậc Node
 
 glTF asset có thể khai báo *nodes*. Nodes là những objects tạo nên một scene để render.
 
@@ -305,7 +303,7 @@ Nodes cũng có thể chứ những thuộc tính transform, được nói trong
 
 Nodes được tổ chức dưới cha-con hierarchy, còn được gọi là *node hierarchy*. *root node* là node không có cha (mồ côi).
 
-Node hierarchy được khai dùng thuộc tính `children` nhu sau:
+Node hierarchy được khai dùng thuộc tính `children` như sau:
 
 ```json
 {
@@ -336,19 +334,19 @@ Node `Car` có bốn node con. Mỗi node con này có thể có node con của 
 
 ### Transformations
 
-Any node can define a local space transformation either by supplying a `matrix` property, or any of `translation`, `rotation`, and `scale`  properties (also known as *TRS properties*). `translation` and `scale` are `FLOAT_VEC3` values in the local coordinate system. `rotation` is a `FLOAT_VEC4` unit quaternion value, `(x, y, z, w)`, in the local coordinate system.
+Bất kỳ node nào cũng có thể khai báo transformation cục bộ bằng một trong hai cách: thêm thuộc tính `matrix` hoặc bất kỳ thuộc tính nào trong các thuộc tính `translation`, `rotation`, và `scale` (*TRS properties*). `translation` và `scale` là giá trị `FLOAT_VEC3` trong trục toạ độ cục bộ. `rotation` là giá trị `FLOAT_VEC4` unit quaternion, `(x, y, z, w)` trong trục toạ độ cục bộ.
 
-When `matrix` is defined, it must be decomposable to TRS. This implies that transformation matrices cannot skew or shear.
+`matrix` phải rã ra thành TRS được. Tức là ma trận transformation không được skew hoặc shear.
 
-TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation.
+Thuộc tính TRS sẽ đuợc dùng để tính ma trận biến dạng theo công thức `T * R * S`; scale, rotate rồi translate.
 
-When a node is targeted for animation (referenced by an `animation.channel.target`), only TRS properties may be present; `matrix` will not be present. 
+Khi mà dùng target để transform node (trỏ từ `animation.channel.target`) thì chỉ được dùng TRS; không được dùng `matrix`.
 
-> **Implementation Note:** If the determinant of the transform is a negative value, the winding order of the mesh triangle faces should be reversed. This supports negative scales for mirroring geometry.
+> **Implementation Note:** Nếu mà transform có giá trị âm thì winding order của mesh triangle sẽ đổi hướng. Làm vậy sẽ hỗ trợ scale âm dùng trong mirroring geometry.
 
-> **Implementation Note:** Non-invertible transformations (e.g., scaling one axis to zero) could lead to lighting and/or visibility artifacts.
+> **Implementation Note:** Non-invertible transformations (transformation mà không làm ngược lại được) (e.g., scale một trục toạ độ thành 0) có thể dẫn đến  artifacts trong lighting và visibility.
 
-In the example below, node named `Box` defines non-default rotation and translation.
+Trong ví dụ dưới, node tên `Box` định nghĩa rotation với translation không mặc định.
 
 ```json
 {
@@ -376,7 +374,7 @@ In the example below, node named `Box` defines non-default rotation and translat
 }
 ```
 
-The next example defines the transformation for a node with attached camera using the `matrix` property rather than using the individual TRS values:
+Ví dụ tiếp theo định nghĩa transformation cho một node được gắn camera dùng thuộc tính `matrix` thay vì TRS.
 
 ```json
 {
@@ -411,15 +409,15 @@ The next example defines the transformation for a node with attached camera usin
 
 ### Buffers and Buffer Views
 
-A *buffer* is data stored as a binary blob. The buffer can contain a combination of geometry, animation, and skins.
+*buffer* là dữ liệu chứa dưới dạng một cục binary blob. Buffer có thể chứa chung dữ liệu về hình học, animation với skins.
 
-Binary blobs allow efficient creation of GPU buffers and textures since they require no additional parsing, except perhaps decompression. An asset can have any number of buffer files for flexibility for a wide array of applications.
+Binary blob cho phép tối ưu hoá việc tạo GPU buffer và texture vì không cần parse gì thêm, ngoại trừ việc xả nén. Asset cỏ thể chứa bao nhiêu file buffer cũng được để dễ ứng dụng trong nhiều trường hợp khác nhau.
 
-Buffer data is little endian.
+Dữ liệu buffer theo thứ tự little endian.
 
-All buffers are stored in the asset's `buffers` array.
+Mọi buffer được chứa trong `buffers` array.
 
-The following example defines a buffer. The `byteLength` property specifies the size of the buffer file. The `uri` property is the URI to the buffer data. Buffer data may also be stored within the glTF file as base64-encoded data and reference via data URI.
+Ví dụ sau định nghĩa một buffer. Thuộc tính `byteLength` miêu tả kích cỡ của file buffer. Thuộc tính `uri` là URI trỏ đến dữ liệu buffer. Dữ liệu buffer cũng có thể được chứa thẳng trong data URI trong file glTF dùng mã hoá base64.
 
 ```json
 {
@@ -432,13 +430,13 @@ The following example defines a buffer. The `byteLength` property specifies the 
 }
 ```
 
-A *bufferView* represents a subset of data in a buffer, defined by an integer offset into the buffer specified in the `byteOffset` property and a `byteLength` property to specify length of the buffer view.
+Một *bufferView* là một tập hợp dữ liệu con trong một buffer, định nghĩa dùng một thuộc tính offset integer `byteOffset` tương đối với buffer, và thuộc tính `byteLength` miêu tả kích cỡ của cái buffer view.
 
-When a buffer view contain vertex indices or attributes, they must be its only content, i.e., it's invalid to have more than one kind of data in the same buffer view.
+Khi buffer view chứa dữ liệu indices hoặc attributes của vertex, dữ liệu đó phải là thứ duy nhất trong buffer view. Có nghĩa là không được chứa nhiều hơn 1 loại dữ liệu trong buffer view.
 
-> **Implementation Note:** This allows a runtime to upload buffer view data to the GPU without any additional processing. When `bufferView.target` is defined, runtime must use it to determine data usage, otherwise it could be inferred from mesh' accessor objects.
+> **Implementation Note:** Làm vậy cho phép việc tải thẳng dữ liệu vô GPU mà không cần xử lý thêm. Khi `bufferView.target` được khai, lúc chạy phải dùng nó để biết data dùng như thế nào, không thì phải xem accessor của mesh để biết.
 
-The following example defines two buffer views: the first is an ELEMENT_ARRAY_BUFFER, which holds the indices for an indexed triangle set, and the second is an ARRAY_BUFFER that holds the vertex data for the triangle set.
+Ví dụ sau định nghĩa 2 buffer views: Cái đầu tiên là một ELEMENT_ARRAY_BUFFER, chứa indices của một set tam giác có đánh số, và cái thứ hai là là một ARRAY_BUFFER chứa dữ liệu vertex cho set tam giác.
 
 ```json
 {
@@ -460,17 +458,17 @@ The following example defines two buffer views: the first is an ELEMENT_ARRAY_BU
 }
 ```
 
-Buffer view could have `byteStride` property. It means byte-distance between consequential elements. This field  is defined only for buffer views that contain vertex attributes.
+Buffer view có thể có thuộc tính `byteStride`. Nó dùng để khai báo khoảng cách (tính bằng byte) giữa hai phần tử cạnh nhau. Cái này chỉ cần khi buffer view chứa vertex attributes.
 
-Buffers and buffer views do not contain type information. They simply define the raw data for retrieval from the file. Objects within the glTF file (meshes, skins, animations) access buffers or buffer views via *accessors*.
+Buffer với buffer view không chứa thông tin về type. Nó chỉ khai báo dữ liệu nguyên từ file. Những đối tượng trong glTF (mesh, skin, animation) đọc dữ liệu này thông qua *accessor*.
 
 #### GLB-stored Buffer
 
-glTF asset could use GLB file container to pack all resources into one file. glTF Buffer referring to GLB-stored `BIN` chunk, must have `buffer.uri` property undefined, and it must be the first element of `buffers` array; byte length of `BIN` chunk could be up to 3 bytes bigger than JSON-defined `buffer.byteLength` to satisfy GLB padding requirements.
+glTF asset có thể dùng file container GLB để đóng gói tất cả mọi thứ vô một file. glTF buffer trỏ tới `BIN` chunk chứa bằng GLB không được khai báo `buffer.uri`, và buffer đó phải là phần tử đầu tiên của `buffers` array; kích cỡ byte của `BIN` chunk được phép lớn hơn `buffer.byteLength` trong khai trong JSON là 3 bytes để hỗ trợ việc pad GLB.
 
-> **Implementation Note:**  Not requiring strict equality of chunk's and buffer's lengths simplifies glTF to GLB conversion a bit: implementations don't need to update `buffer.byteLength` after applying GLB padding.
+> **Implementation Note:**  Không bắt kích cỡ của `BIN` chunk và kích cỡ khai trong buffer bằng nhau thì đơn giản hoá việc chuyển từ glTF sang GLB một tí: không cần cập nhật `buffer.byteLength` sau khi pad GLB.
 
-In the following example, the first buffer objects refers to GLB-stored data, while the second points to external resource:
+Trong ví dụ sau, cái buffer đầu tiên trỏ đến dữ liệu chứa bằng GLB. Cái buffer thứ hai trỏ đến dữ liệu bên ngoài.
 
 ```json
 {
@@ -486,17 +484,17 @@ In the following example, the first buffer objects refers to GLB-stored data, wh
 }
 ```
 
-See [GLB File Format Specification](#glb-file-format-specification) for details on GLB File Format.
+Xem [Cấu Trúc File GLB](#glb-file-format-specification) để biết thêm.
 
 ### Accessors
 
-All large data for meshes, skins, and animations is stored in buffers and retrieved via accessors.
+Mọi dữ liệu lớn dùng trong mesh, skin, và animation được lưu trong buffer và đọc bằng accessor.
 
-An *accessor* defines a method for retrieving data as typed arrays from within a `bufferView`. The accessor specifies a component type (e.g. `5126 (FLOAT)`) and a data type (e.g. `VEC3`), which when combined define the complete data type for each array element. The accessor also specifies the location and size of the data within the `bufferView` using the properties `byteOffset` and `count`. The latter specifies the number of elements within the `bufferView`, *not* the number of bytes. Elements could be, e.g., vertex indices, vertex attributes, animation keyframes, etc.
+Một *accessor* định nghĩa phương thức đọc dữ liệu trong `bufferView` dưới dạng typed arrays. Accessor khai báo type của đơn vị trong dữ liệu (như là `5126 (FLOAT)`) và type của dữ liệu (như là `VEC3`). Hai thông tin này gộp lại sẽ định nghĩa toàn diện type của dữ liệu cho mỗi phần tử trong mảng. Accessor cũng khai báo vị trí của dữ liệu trong `bufferView` và kích cỡ của dự liệu trong thuộc tính `byteOffset` và `count`. `count` miêu tả số lượng phần tử chứa trong `bufferView`, *chứ không phải* là kích cỡ byte. Một số ví dụ của phần tử là vertex indices, vertex attributes, animation keyframes,...
 
-All accessors are stored in the asset's `accessors` array.
+Mọi accessors đều được chứa trong `accessors` array.
 
-The following fragment shows two accessors, the first is a scalar accessor for retrieving a primitive's indices, and the second is a 3-float-component vector accessor for retrieving the primitive's position data.
+Ví dụ sau dùng 2 accessor, cái đầu là accessor đọc indices của primitive, cái thứ hai là access đọc vector chứa 3 giá trị float để đọc dữ liệu toạ độ của primitive.
 
 ```json
 {
@@ -537,15 +535,15 @@ The following fragment shows two accessors, the first is a scalar accessor for r
 
 #### Floating-Point Data
 
-Data of `5126 (FLOAT)` componentType must use IEEE-754 single precision format. 
+Dữ liệu dạng `5126 (FLOAT)` componentType phải dùng quy ước IEEE-754. 
 
-Values of `NaN`, `+Infinity`, and `-Infinity` are not allowed.
+Giá trị như `NaN`, `+Infinity`, và `-Infinity` là không hợp lệ.
 
 #### Accessor Element Size
 
-The following tables can be used to compute the size of element accessible by accessor.
+Bảng sau có thể được dùng để tính kích cỡ mỗi phần tử được đọc bởi accessor.
 
-| `componentType` | Size in bytes |
+| `componentType` | Kích cỡ theo byte |
 |:---------------:|:-------------:|
 | `5120` (BYTE) | 1 |
 | `5121`(UNSIGNED_BYTE) | 1 |
@@ -554,7 +552,7 @@ The following tables can be used to compute the size of element accessible by ac
 | `5125` (UNSIGNED_INT) | 4 |
 | `5126` (FLOAT) | 4 |
 
-| `type` | Number of components |
+| `type` | Số lượng component |
 |:------:|:--------------------:|
 | `"SCALAR"` | 1 |
 | `"VEC2"` | 2 |
@@ -564,10 +562,10 @@ The following tables can be used to compute the size of element accessible by ac
 | `"MAT3"` | 9 |
 | `"MAT4"` | 16 |
 
-Element size, in bytes, is
-`(size in bytes of the 'componentType') * (number of components defined by 'type')`.
+Kích cỡ một phần tử, theo byte, được tính như sau:
+`(kích cỡ theo bytes của 'componentType') * (số component được đĩnh nghĩa với 'type')`.
 
-For example:
+Ví dụ:
 
 ```json
 {
@@ -583,70 +581,27 @@ For example:
 }
 ```
 
-In this accessor, the `componentType` is `5126` (FLOAT), so each component is four bytes.  The `type` is `"VEC3"`, so there are three components.  The size of each element is 12 bytes (`4 * 3`).
+Trong accessor này, `componentType` là `5126` (FLOAT) nên mỗi component là 4 byte. `type` là `"VEC3"`, nên có 3 component.  Kích cỡ của một phần tử là 12 byte (`4 * 3`).
 
-#### Accessors Bounds
+#### Giới Hạn Accessor
 
-`accessor.min` and `accessor.max` properties are arrays that contain per-component minimum and maximum values, respectively. Exporters and loaders must treat these values as having the same data type as accessor's `componentType`, i.e., use integers (JSON number without fractional part) for integer types and use floating-point decimals for `5126` (FLOAT).
+Thuộc tính `accessor.min` và `accessor.max` là array chứa giá trị min và max của mỗi component theo thứ tự. Type của các giá trị min max này sẽ theo `componentType` của accessor. Tức là nếu `componentType` là integer thì min max cũng là integer.
 
-> **Implementation Note:** JavaScript client implementations should convert JSON-parsed floating-point doubles to single precision, when `componentType` is `5126` (FLOAT). This could be done with `Math.fround` function.
+> **Implementation Note:** Nếu dùng JavaScript, nên dùng `Math.fround` để đổi số dạng floating-point doubles đọc từ JSON thành dạng single precision khi `componentType` là `5126` (FLOAT).
 
-While these properties are not required for all accessor usages, there are cases when minimum and maximum must be defined. Refer to other sections of this specification for details. 
+Mặc dù không bắt buộc phải có min max trong accessor trong nhiều trường hợp, có những trường hợp đặc biệt phải cần min max. Xem những phần khác để hiểu thêm.
 
-#### Sparse Accessors
+#### Canh Chỉnh Data
 
-Sparse encoding of arrays is often more memory-efficient than dense encoding when describing incremental changes with respect to a reference array.
-This is often the case when encoding morph targets (it is, in general, more efficient to describe a few displaced vertices in a morph target than transmitting all morph target vertices).
+Offset của một `accessor` tương đối với một `bufferView` (`accessor.byteOffset`) và offset của một `accessor` tương đối với một `buffer` (`accessor.byteOffset + bufferView.byteOffset`) phải là bội số của kích cỡ của component type trong accessor.
 
-glTF 2.0 extends the accessor structure to enable efficient transfer of sparse arrays.
-Similarly to a standard accessor, a sparse accessor initializes an array of typed elements from data stored in a `bufferView` . On top of that, a sparse accessor includes a `sparse` dictionary describing the elements that deviate from their initialization value. The `sparse` dictionary contains the following mandatory properties:
-- `count`: number of displaced elements.
-- `indices`: strictly increasing array of integers of size `count` and specific `componentType` that stores the indices of those elements that deviate from the initialization value.
-- `values`: array of displaced elements corresponding to the indices in the `indices` array.
+Khi `byteStride` không được khai báo trong `bufferView` thì có nghĩa là phần tử trong accessor được đóng gần kề nhau. Tức là `byteStride` bằng với kích cỡ của mỗi phần từ. Khi `byteStride` được khai báo, nó phải là bội số của kích cỡ của component type trong accessor. Bắt buộc phải có `byteStride` nếu nhiều hơn một accessor dùng chung một `bufferView`.
 
-The following fragment shows an example of `sparse` accessor with 10 elements deviating from the initialization array.
+Mỗi `accessor` phải nhét vừa trong `bufferView` của nó. Tức là `accessor.byteOffset + STRIDE * (accessor.count - 1) + SIZE_OF_ELEMENT` nhỏ hơn hoặc bằng `bufferView.length`.
 
-```json
-{
-    "accessors": [
-        {
-            "bufferView": 0,
-            "byteOffset": 0,
-            "componentType": 5123,
-            "count": 12636,
-            "type": "VEC3",
-            "sparse": {
-                "count": 10,
-                "indices": {
-                    "bufferView": 1,
-                    "byteOffset": 0,
-                    "componentType": 5123
-                },
-                "values": {
-                    "bufferView": 2,
-                    "byteOffset": 0
-                }
-            }
-        }
-    ]
-}
-```
-A sparse accessor differs from a regular one in that `bufferView` property isn't required. When it's omitted, the sparse accessor is initialized as an array of zeros of size `(size of the accessor element) * (accessor.count)` bytes.
-A sparse accessor `min` and `max` properties correspond, respectively, to the minimum and maximum component values once the sparse substitution is applied.
+Vì mục tiêu tối ưu, mỗi phần tử của vertex attribute phải được cân chỉnh theo khoảng cách 4-byte trong `bufferView`. Tức là `accessor.byteOffset` và `bufferView.byteStride` phải là bội số của 4 để đảm bảo đầu và đuôi của `accessor` và của mỗi phần từ bắt đầu và kết thúc ở byte có thứ tự là bội số của 4.
 
-When neither `sparse` nor `bufferView` is defined, `min` and `max` properties could have any values. This is intended for use cases when binary data is supplied by external means (e.g., via extensions).
-
-#### Data Alignment
-
-The offset of an `accessor` into a `bufferView` (i.e., `accessor.byteOffset`) and the offset of an `accessor` into a `buffer` (i.e., `accessor.byteOffset + bufferView.byteOffset`) must be a multiple of the size of the accessor's component type.
-
-When `byteStride` of referenced `bufferView` is not defined, it means that accessor elements are tightly packed, i.e., effective stride equals the size of the element. When `byteStride` is defined, it must be a multiple of the size of the accessor's component type. `byteStride` must be defined, when two or more accessors use the same `bufferView`.
-
-Each `accessor` must fit its `bufferView`, i.e., `accessor.byteOffset + STRIDE * (accessor.count - 1) + SIZE_OF_ELEMENT` must be less than or equal to `bufferView.length`.
-
-For performance and compatibility reasons, each element of a vertex attribute must be aligned to 4-byte boundaries inside `bufferView` (i.e., `accessor.byteOffset` and `bufferView.byteStride` must be multiples of 4).
-
-Accessors of matrix type have data stored in column-major order; start of each column must be aligned to 4-byte boundaries. To achieve this, three `type`/`componentType` combinations require special layout:
+Accessor đọc dữ liệu dạng ma trận thì sẽ đọc dọc theo cột (column-major order); Đầu của mỗi cột phải được canh theo byte bội số của 4. Để được vậy, có ba tổ hợp `type`/`componentType` cần canh chỉnh đặc biệt:
 
 **MAT2, 1-byte components**
 ```
@@ -669,11 +624,11 @@ Accessors of matrix type have data stored in column-major order; start of each c
 |m00|m00|m10|m10|m20|m20|---|---|m01|m01|m11|m11|m21|m21|---|---|m02|m02|m12|m12|m22|m22|---|---|
 ```
 
-Alignment requirements apply only to start of each column, so trailing bytes could be omitted if there's no further data. 
+Chỉ cần canh cho đầu mỗi cột thôi. Đuôi không cần quan tâm nếu hết dữ liệu.
 
-> **Implementation Note:** For JavaScript, this allows a runtime to efficiently create a single ArrayBuffer from a glTF `buffer` or an ArrayBuffer per `bufferView`, and then use an `accessor` to turn a typed array view (e.g., `Float32Array`) into an ArrayBuffer without copying it because the byte offset of the typed array view is a multiple of the size of the type (e.g., `4` for `Float32Array`).
+> **Implementation Note:** Trong JavaScript, làm vậy thì lúc chạy sẽ tối ưu hoá việc tạo một ArrayBuffer từ `buffer` của glTF hoặc tạo từng ArrayBuffer cho mỗi `bufferView`, rồi dùng một `accessor` để biến một typed array view (như là `Float32Array`) thành một ArrayBuffer mà không cần copy vì byte offset của typed array view đã là bội số của kích cỡ của type sẵn rồi (ví dụ như là bội số của `4` nếu dùng `Float32Array`)
 
-Consider the following example:
+Hãy xem ví dụ sau:
 
 ```json
 {
@@ -696,28 +651,28 @@ Consider the following example:
     ]
 }
 ```
-Accessing binary data defined by example above could be done like this:
+Một cách đọc dữ liệu binary ở trên là như sau:
 
 ```js
 var typedView = new Uint16Array(buffer, accessor.byteOffset + accessor.bufferView.byteOffset, accessor.count);
 ```
 
-The size of the accessor component type is two bytes (the `componentType` is unsigned short). The accessor's `byteOffset` is also divisible by two. Likewise, the accessor's offset into buffer `0` is `5228 ` (`620 + 4608`), which is divisible by two.
+Kích cỡ của component type của accessor là 2 byte (`componentType` là unsigned short). `byteOffset` của accessor chia hết cho 2. Tương tự, offset của accessor tương đối với buffer `0` là `5228` (`620 + 4608`), cũng chia hết cho 2.
 
 
 ## Geometry
 
-Any node can contain one mesh, defined in its `mesh` property. Mesh can be skinned using a information provided in referenced `skin` object. Mesh can have morph targets.
+Bất kỳ node nào cũng chứa được một mesh, khai báo dùng thuộc tính `mesh`. Mesh có thể gắn skin dùng thông tin từ đối tượng `skin`. Mesh cũng có thể dùng morth target. Nhưng vì dự án chưa cần nên tạm thời bỏ qua hai phần này.
 
 ### Meshes
 
-In glTF, meshes are defined as arrays of *primitives*. Primitives correspond to the data required for GPU draw calls. Primitives specify one or more `attributes`, corresponding to the vertex attributes used in the draw calls. Indexed primitives also define an `indices` property. Attributes and indices are defined as references to accessors containing corresponding data. Each primitive also specifies a material and a primitive type that corresponds to the GPU primitive type (e.g., triangle set).
+Trong glTF, mesh được định nghĩa là một array chứa *primitives*. Primitives là dữ liệu mà GPU dùng để vẽ (GPU draw call). Primitives có thể bao gồm một hoặc nhiều `attributes`, tương đương với vertex attributes dùng trong draw call. Primitives có dùng index thì sẽ khai báo thuộc tính `indices`. Attributes với indices chứa con trỏ đến accessor chứa dữ liệu cần thiết. Mỗi primitive chứa thông tin về một material và một primitive type tương đương với GPU primitive type (ví dụ như set tam giác).
 
-> **Implementation note:** Splitting one mesh into *primitives* could be useful to limit number of indices per draw call.
+> **Implementation note:** Chẻ một mesh thành nhiều *primitives*cho phép việc kiểm soát số lượng indices được vẽ cho mỗi draw call.
 
-If `material` is not specified, then a [default material](#default-material) is used.
+Nếu `material` bỏ trống thì sẽ dùng [material mặc định](#default-material).
 
-The following example defines a mesh containing one triangle set primitive:
+Ví dụ sau định nghĩa một mesh chứa một set primitive tam giác.
 
 ```json
 {
@@ -741,16 +696,16 @@ The following example defines a mesh containing one triangle set primitive:
 }
 ```
 
-Each attribute is defined as a property of the `attributes` object. The name of the property corresponds to an enumerated value identifying the vertex attribute, such as `POSITION`. The value of the property is the index of an accessor that contains the data.
+Mỗi attribute được định nghĩa là thuộc tính của đối tượng `attributes`. Tên của mỗi thuộc tính attribute sẽ là tương với những giá trị định sẵn để đánh dấu các vertex attribute khác nhau, như là `POSITION`. Giá trị của thuộc tính attribute sẽ là index của một accessor chứa dữ liệu cần thiết.
 
-Valid attribute semantic property names include `POSITION`, `NORMAL`, `TANGENT`, `TEXCOORD_0`, `TEXCOORD_1`, `COLOR_0`, `JOINTS_0`, and `WEIGHTS_0`.  Application-specific semantics must start with an underscore, e.g., `_TEMPERATURE`.
+Những tên hợp lệ của một thuộc tính attribute bao gồm `POSITION`, `NORMAL`, `TANGENT`, `TEXCOORD_0`, `TEXCOORD_1`, `COLOR_0`, `JOINTS_0`, và `WEIGHTS_0`. Những thuộc tính riêng của ứng dụng phải bắt đầu bằng `_` như là `_TEMPERATURE`.
 
-Valid accessor type and component type for each attribute semantic property are defined below.
+Những type, component type hợp, và mỗi thuộc tính attribute hợp lệ được liệt kê bên dưới.
 
-|Name|Accessor Type(s)|Component Type(s)|Description|
+|Tên|Accessor Type(s)|Component Type(s)|Miêu tả|
 |----|----------------|-----------------|-----------|
-|`POSITION`|`"VEC3"`|`5126`&nbsp;(FLOAT)|XYZ vertex positions|
-|`NORMAL`|`"VEC3"`|`5126`&nbsp;(FLOAT)|Normalized XYZ vertex normals|
+|`POSITION`|`"VEC3"`|`5126`&nbsp;(FLOAT)|Vị trí XYZ của vertex|
+|`NORMAL`|`"VEC3"`|`5126`&nbsp;(FLOAT)|XYZ Normal của vertex đã được normalized|
 |`TANGENT`|`"VEC4"`|`5126`&nbsp;(FLOAT)|XYZW vertex tangents where the *w* component is a sign value (-1 or +1) indicating handedness of the tangent basis|
 |`TEXCOORD_0`|`"VEC2"`|`5126`&nbsp;(FLOAT)<br>`5121`&nbsp;(UNSIGNED_BYTE)&nbsp;normalized<br>`5123`&nbsp;(UNSIGNED_SHORT)&nbsp;normalized|UV texture coordinates for the first set|
 |`TEXCOORD_1`|`"VEC2"`|`5126`&nbsp;(FLOAT)<br>`5121`&nbsp;(UNSIGNED_BYTE)&nbsp;normalized<br>`5123`&nbsp;(UNSIGNED_SHORT)&nbsp;normalized|UV texture coordinates for the second set|
@@ -758,13 +713,13 @@ Valid accessor type and component type for each attribute semantic property are 
 |`JOINTS_0`|`"VEC4"`|`5121`&nbsp;(UNSIGNED_BYTE)<br>`5123`&nbsp;(UNSIGNED_SHORT)|See [Skinned Mesh Attributes](#skinned-mesh-attributes)|
 |`WEIGHTS_0`|`"VEC4`|`5126`&nbsp;(FLOAT)<br>`5121`&nbsp;(UNSIGNED_BYTE)&nbsp;normalized<br>`5123`&nbsp;(UNSIGNED_SHORT)&nbsp;normalized|See [Skinned Mesh Attributes](#skinned-mesh-attributes)|
 
-`POSITION` accessor **must** have `min` and `max` properties defined.
+`POSITION` accessor **phải** khai báo thuộc tính `min` và `max`.
 
-`TEXCOORD`, `COLOR`, `JOINTS`, and `WEIGHTS` attribute semantic property names must be of the form `[semantic]_[set_index]`, e.g., `TEXCOORD_0`, `TEXCOORD_1`, `COLOR_0`. Client implementations must support at least two UV texture coordinate sets, one vertex color, and one joints/weights set. Extensions can add additional property names, accessor types, and/or accessor component types.
+Tên của attribute `TEXCOORD`, `COLOR`, `JOINTS`, và `WEIGHTS` phải dưới dạng `[semantic]_[set_index]`, ví dụ như `TEXCOORD_0`, `TEXCOORD_1`, `COLOR_0`. Ứng dụng phải hỗ trợ ít nhất 2 bộ toạ độ UV texture, 1 vertex color, và 1 bộ joints/weights. Extension có thể thêm tên thuộc tính, accessor types, và/hoặc accessor component types.
 
-All indices for indexed attribute semantics, must start with 0 and be continuous: `TEXCOORD_0`, `TEXCOORD_1`, etc.
+Mọi index trong index attribute phải bắt đầu bằng 0 và liền kề nhau: `TEXCOORD_0`, `TEXCOORD_1`, ...
 
-> **Implementation note:** Each primitive corresponds to one WebGL draw call (engines are, of course, free to batch draw calls). When a primitive's `indices` property is defined, it references the accessor to use for index data, and GL's `drawElements` function should be used. When the `indices` property is not defined, GL's `drawArrays` function should be used with a count equal to the count property of any of the accessors referenced by the `attributes` property (they are all equal for a given primitive).
+> **Implementation note:** Mỗi primitive là tương ứng với 1 WebGL draw call (engine tất nhiên sẽ có quyền chẻ draw call ra nhiều mảnh) corresponds to one WebGL draw call (engines are, of course, free to batch draw calls). When a primitive's `indices` property is defined, it references the accessor to use for index data, and GL's `drawElements` function should be used. When the `indices` property is not defined, GL's `drawArrays` function should be used with a count equal to the count property of any of the accessors referenced by the `attributes` property (they are all equal for a given primitive).
 
 > **Implementation note:** When normals are not specified, client implementations should calculate flat normals.
 
@@ -941,13 +896,13 @@ Samplers are stored in the `samplers` array of the asset. Each sampler specifies
 
 ## Materials
 
-glTF defines materials using a common set of parameters that are based on widely used material representations from Physically-Based Rendering (PBR). Specifically, glTF uses the metallic-roughness material model. Using this declarative representation of materials enables a glTF file to be rendered consistently across platforms. 
+glTF định nghĩa materials bằng những bộ parameter thông dụng trong Physically-Based Rendering (PBR). Cụ thể là glTF dùng model metallic-roughness. Dùng chuẩn này sẽ đảm bảo là file glTF được render một cách đồng đều trên nhiều nền tảng.
 
 <p><img src="figures/materials.png" /></p>
 
 ### Metallic-Roughness Material 
 
-All parameters related to the metallic-roughness material model are defined under the `pbrMetallicRoughness` property of `material` object. The following example shows how a material like gold can be defined using the metallic-roughness parameters: 
+Mọi parameter liên quan đến model metallic-roughness material được định nghĩa dưới thuộc tính `pbrMetallicRoughness` của đối tượng `material`. Đây là ví dụ của cách vẽ material vàng (gold) bằng model này.
 
 ```json
 {
@@ -964,22 +919,22 @@ All parameters related to the metallic-roughness material model are defined unde
 }
 ```
 
-The metallic-roughness material model is defined by the following properties:
-* `baseColor` - The base color of the material
-* `metallic` - The metalness of the material
-* `roughness` - The roughness of the material
+Model metallic-roughness material được định nghĩa bởi những thuộc tính sau:
+* `baseColor` - Màu gốc của material
+* `metallic` - Độ giống kim loại của material
+* `roughness` - Độ nhám của material
 
-The base color has two different interpretations depending on the value of metalness. When the material is a metal, the base color is the specific measured reflectance value at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color of the material. In this model it is not possible to specify a F0 value for non-metals, and a linear value of 4% (0.04) is used. 
+Màu gốc có hai cách đọc tuỳ vào giá trị của độ kim loại. Khi mà material là kim loại, màu gốc là giá trị phản quang vuông góc với bề mặt (F0). Khi mà material là phi kim, màu gốc là reflected diffuse color của material. Model này không cho phép khai bảo giá trị F0 cho phi kim, và giá trị tuyến tính là 4% (0.04) sẽ được dùng.
 
-The value for each property (`baseColor`, `metallic`, `roughness`) can be defined using factors or textures. The `metallic` and `roughness` properties are packed together in a single texture called `metallicRoughnessTexture`. If a texture is not given, all respective texture components within this material model are assumed to have a value of `1.0`. If both factors and textures are present the factor value acts as a linear multiplier for the corresponding texture values. The `baseColorTexture` is in sRGB space and must be converted to linear space before it is used for any computations.
+Giá trị của mỗi thuộc tính (`baseColor`, `metallic`, `roughness`) có thể được định nghĩa dùng factor hoặc texture. Thuộc tính `metallic` và `roughness` được đóng chung trong một texture gọi là `metallicRoughnessTexture`. Nếu không có texture thì mọi component của texture trong material model này sẽ có giá trị là `1.0`. Nếu cả factor và texture đều được khai báo thì cái factor sẽ được dùng làm muliplier tuyến tính cho những gía trị texture tương ứng. `baseColorTexture` nằm trong không gian sRGB và phải được chuyển đổi sang không gian tuyến tính trước khi tính toán.
 
-For example, assume a value of `[0.9, 0.5, 0.3, 1.0]` in linear space is obtained from an RGBA `baseColorTexture`, and assume that `baseColorFactor` is given as `[0.2, 1.0, 0.7, 1.0]`.
-Then, the result would be 
+Ví dụ, giả sử giá trị `[0.9, 0.5, 0.3, 1.0]` thuộc không gian tuyến tính được lấy từ một RGBA `baseColorTexture`, và giả sử `baseColorFactor` là `[0.2, 1.0, 0.7, 1.0]`.
+Kết quả sẽ là 
 ```
 [0.9 * 0.2, 0.5 * 1.0, 0.3 * 0.7, 1.0 * 1.0] = [0.18, 0.5, 0.21, 1.0]
 ```
 
-The following equations show how to calculate bidirectional reflectance distribution function (BRDF) inputs (*c<sub>diff</sub>*, *F<sub>0</sub>*, *&alpha;*) from the metallic-roughness material properties. In addition to the material properties, if a primitive specifies a vertex color using the attribute semantic property `COLOR_0`, then this value acts as an additional linear multiplier to `baseColor`.
+Những phương trình sau ví dụ cho cách tính input của hàm bidirectional reflectance distribution (BRDF) (*c<sub>diff</sub>*, *F<sub>0</sub>*, *&alpha;*) từ from the metallic-roughness material properties. In addition to the material properties, if a primitive specifies a vertex color using the attribute semantic property `COLOR_0`, then this value acts as an additional linear multiplier to `baseColor`.
 
 `const dielectricSpecular = rgb(0.04, 0.04, 0.04)`
 <br>
@@ -1112,304 +1067,53 @@ The following example defines two perspective cameras with supplied values for Y
 }
 ```
 
-### Projection Matrices
-
-Runtimes are expected to use the following projection matrices.
-
-#### Infinite perspective projection
-<p><img src="figures/infinite-perspective.png" /></p>
-where
-
-- `a` equals `camera.perspective.aspectRatio`;
-- `y` equals `camera.perspective.yfov`;
-- `n` equals `camera.perspective.znear`.
-
-#### Finite perspective projection
-<p><img src="figures/finite-perspective.png" /></p>
-where
-
-- `a` equals `camera.perspective.aspectRatio`;
-- `y` equals `camera.perspective.yfov`;
-- `f` equals `camera.perspective.zfar`;
-- `n` equals `camera.perspective.znear`.
-
-#### Orthographic projection
-<p><img src="figures/ortho.png" /></p>
-where
-
-- `r` equals `camera.orthographic.xmag`;
-- `t` equals `camera.orthographic.ymag`;
-- `f` equals `camera.orthographic.zfar`;
-- `n` equals `camera.orthographic.znear`.
-
-## Animations
-
-glTF supports articulated and skinned animation via key frame animations of nodes' transforms. Key frame data is stored in buffers and referenced in animations using accessors.
-glTF 2.0 also supports animation of instantiated Morph Targets in a similar fashion.
-
-> **Note:** glTF 2.0 only supports animating node transforms and Morph Targets weights. A future version of the specification may support animating arbitrary properties, such as material colors and texture transform matrices.
-
-> **Note:** glTF 2.0 defines only animation storage, so this specification doesn't define any particular runtime behavior, such as: order of playing, auto-start, loops, mapping of timelines, etc...
-
-> **Implementation Note:** glTF 2.0 does not specifically define how an animation will be used when imported but, as a best practice, it is recommended that each animation is self contained as an action. For example, "Walk" and "Run" animations might each contain multiple channels targeting a model's various bones. The client implementation may choose when to play any of the available animations.
-
-All animations are stored in the `animations` array of the asset. An animation is defined as a set of channels (the `channels` property) and a set of samplers that specify accessors with key frame data and interpolation method (the `samplers` property).
-
-The following examples show expected animations usage.
-
-```json
-{
-    "animations": [
-        {
-            "name": "Animate all properties of one node with different samplers",
-            "channels": [
-                {
-                    "sampler": 0,
-                    "target": {
-                        "node": 1,
-                        "path": "rotation"
-                    }
-                },
-                {
-                    "sampler": 1,
-                    "target": {
-                        "node": 1,
-                        "path": "scale"
-                    }
-                },
-                {
-                    "sampler": 2,
-                    "target": {
-                        "node": 1,
-                        "path": "translation"
-                    }
-                }
-            ],
-            "samplers": [
-                {
-                    "input": 4,
-                    "interpolation": "LINEAR",
-                    "output": 5
-                },
-                {
-                    "input": 4,
-                    "interpolation": "LINEAR",
-                    "output": 6
-                },
-                {
-                    "input": 4,
-                    "interpolation": "LINEAR",
-                    "output": 7
-                }
-            ]
-        },
-        {
-            "name": "Animate two nodes with different samplers",
-            "channels": [
-                {
-                    "sampler": 0,
-                    "target": {
-                        "node": 0,
-                        "path": "rotation"
-                    }
-                },
-                {
-                    "sampler": 1,
-                    "target": {
-                        "node": 1,
-                        "path": "rotation"
-                    }
-                }
-            ],
-            "samplers": [
-                {
-                    "input": 0,
-                    "interpolation": "LINEAR",
-                    "output": 1
-                },
-                {
-                    "input": 2,
-                    "interpolation": "LINEAR",
-                    "output": 3
-                }
-            ]
-        },
-        {
-            "name": "Animate two nodes with the same sampler",
-            "channels": [
-                {
-                    "sampler": 0,
-                    "target": {
-                        "node": 0,
-                        "path": "rotation"
-                    }
-                },
-                {
-                    "sampler": 0,
-                    "target": {
-                        "node": 1,
-                        "path": "rotation"
-                    }
-                }
-            ],
-            "samplers": [
-                {
-                    "input": 0,
-                    "interpolation": "LINEAR",
-                    "output": 1
-                }
-            ]
-        },
-        {
-            "name": "Animate a node rotation channel and the weights of a Morph Target it instantiates",
-            "channels": [
-                {
-                    "sampler": 0,
-                    "target": {
-                        "node": 1,
-                        "path": "rotation"
-                    }
-                },
-                {
-                    "sampler": 1,
-                    "target": {
-                        "node": 1,
-                        "path": "weights"
-                    }
-                }
-            ],
-            "samplers": [
-                {
-                    "input": 4,
-                    "interpolation": "LINEAR",
-                    "output": 5
-                },
-                {
-                    "input": 4,
-                    "interpolation": "LINEAR",
-                    "output": 6
-                }
-            ]
-        }
-    ]
-}
-```
-
-*Channels* connect the output values of the key frame animation to a specific node in the hierarchy. A channel's `sampler` property contains the index of one of the samplers present in the containing animation's `samplers` array. The `target` property is an object that identifies which node to animate using its `node` property, and which property of the node to animate using `path`. Non-animated properties must keep their values during animation.
-
-When `node` isn't defined, channel should be ignored. Valid path names are `"translation"`, `"rotation"`, `"scale"`, and `"weights"`.
-
-Each of the animation's *samplers* defines the `input`/`output` pair: a set of floating point scalar values representing linear time in seconds; and a set of vectors or scalars representing animated property. All values are stored in a buffer and accessed via accessors; refer to the table below for output accessor types. Interpolation between keys is performed using the interpolation method specified in the `interpolation` property. Supported `interpolation` values include `LINEAR`, `STEP`, and `CUBICSPLINE`. See [Appendix C](#appendix-c-spline-interpolation) for additional information about spline interpolation.
-
-The inputs of each sampler are relative to `t=0`, defined as the beginning of the parent `animations` entry. Before and after the provided input range, output should be "clamped" to the nearest end of the input range. For example, if the earliest sampler input for an animation is `t=10`, a client implementation should begin playback of that animation at `t=0` with output clamped to the first output value. Samplers within a given animation are _not_ required to have the same inputs.
-
-|`channel.path`|Accessor Type|Component Type(s)|Description|
-|----|----------------|-----------------|-----------|
-|`"translation"`|`"VEC3"`|`5126`&nbsp;(FLOAT)|XYZ translation vector|
-|`"rotation"`|`"VEC4"`|`5126`&nbsp;(FLOAT)<br>`5120`&nbsp;(BYTE)&nbsp;normalized<br>`5121`&nbsp;(UNSIGNED_BYTE)&nbsp;normalized<br>`5122`&nbsp;(SHORT)&nbsp;normalized<br>`5123`&nbsp;(UNSIGNED_SHORT)&nbsp;normalized|XYZW rotation quaternion|
-|`"scale"`|`"VEC3"`|`5126`&nbsp;(FLOAT)|XYZ scale vector|
-|`"weights"`|`"SCALAR"`|`5126`&nbsp;(FLOAT)<br>`5120`&nbsp;(BYTE)&nbsp;normalized<br>`5121`&nbsp;(UNSIGNED_BYTE)&nbsp;normalized<br>`5122`&nbsp;(SHORT)&nbsp;normalized<br>`5123`&nbsp;(UNSIGNED_SHORT)&nbsp;normalized|Weights of morph targets|
-
-Implementations must use following equations to get corresponding floating-point value `f` from a normalized integer `c` and vise-versa:
-
-|`accessor.componentType`|int-to-float|float-to-int|
-|-----------------------------|--------|----------------|
-| `5120`&nbsp;(BYTE)          |`f = max(c / 127.0, -1.0)`|`c = round(f * 127.0)`|
-| `5121`&nbsp;(UNSIGNED_BYTE) |`f = c / 255.0`|`c = round(f * 255.0)`|
-| `5122`&nbsp;(SHORT)         |`f = max(c / 32767.0, -1.0)`|`c = round(f * 32767.0)`|
-| `5123`&nbsp;(UNSIGNED_SHORT)|`f = c / 65535.0`|`c = round(f * 65535.0)`|
-
-Animation Sampler's `input` accessor **must** have `min` and `max` properties defined.
-
-> **Implementation Note:** Animations with non-linear time inputs, such as time warps in Autodesk 3ds Max or Maya, are not directly representable with glTF animations. glTF is a runtime format and non-linear time inputs are expensive to compute at runtime. Exporter implementations should sample a non-linear time animation into linear inputs and outputs for an accurate representation.
-
-A Morph Target animation frame is defined by a sequence of scalars of length equal to the number of targets in the animated Morph Target. Morph Target animation is by nature sparse, consider using [Sparse Accessors](#sparse-accessors) for storage of Morph Target animation.
-
-glTF animations can be used to drive articulated or skinned animations. Skinned animation is achieved by animating the joints in the skin's joint hierarchy.
-
 ## Specifying Extensions
 
-glTF defines an extension mechanism that allows the base format to be extended with new capabilities. Any glTF object can have an optional `extensions` property, as in the following example:
+Thiết kế của glTF cho phép việc mở rộng cấu trúc và thêm tính năng bằng extensions. Bất kỳ đối tượng glTF nào cũng có thể gắn thêm thuộc tính `extensions` để mở rộng. Ví dụ như là có thể thêm tính năng cho scene bằng `scene.extensions`.
 
-```json
-{
-    "material": [
-        {
-            "extensions": {
-                "KHR_materials_common": {
-                    "technique": "LAMBERT"
-                }
-            }
-        }
-    ]
-}
-```
+Để biết thêm về glTF extensions, hãy xem [thông số của extension](../../extensions/README.md).
 
-All extensions used in a glTF asset must be listed in the top-level `extensionsUsed` array object, e.g.,
+# Cấu Trúc File GLB
 
-```json
-{
-    "extensionsUsed": [
-        "KHR_materials_common",
-        "VENDOR_physics"
-    ]
-}
-```
+glTF cung cấp hai cách để vận chuyển dữ liệu, có thể dùng cả hai cùng lúc:
 
-All glTF extensions required to load and/or render an asset must be listed in the top-level `extensionsRequired` array, e.g.,
+* glTF JSON trỏ tới dữ liệu binary ngoài (geometry, key frames, skins), and images.
+* glTF JSON chứa dữ liệu binary mã hoá theo base64, và hình ảnh lưu trong data URI.
 
-```json
-{
-    "extensionsRequired": [
-        "WEB3D_quantized_attributes"
-    ]
-}
-```
 
-`extensionsRequired` is a subset of `extensionsUsed`. All values in `extensionsRequired` must also exist in `extensionsUsed`.
+Đối với những tài nguyên này, glTF đòi phải một là bắn nhiều request hoặc hi sinh space vì dùng base64. Base64 cần phải xử lý thêm và tăng kích cỡ tài nguyên lên khoảng 33%. Mặc dù có thể dùng file nén để khắc phục, nhưng giải nén và giải mã cũng tốn nhiều thời gian.
 
-For more information on glTF extensions, consult the [extensions registry specification](../../extensions/README.md).
+Để giải quyết vấn đề này, một cấu trúc container, _Binary glTF_ được ra đời. Trong Binary glTF, một glTF asset (JSON, .bin và hình ảnh) có thể được lưu chung trong một cục binary blob.
 
-# GLB File Format Specification
+Cục binary blob (cỏ thể là một file), có cấu trúc sau:
+* 12 byte lưu thông tin về toàn container, gọi là `header`.
+* Một hoặc nhiều `chunks` chứa JSON và dữ liệu binary.
 
-glTF provides two delivery options that can also be used together:
+`chunk` chửa JSON có thể dùng tài nguyên bên ngoài như bình thường, và cũng có thể dùng tài nguyên chứa trong các binary `chunks` khác.
 
-* glTF JSON points to external binary data (geometry, key frames, skins), and images.
-* glTF JSON embeds base64-encoded binary data, and images inline using data URIs.
+Ví dụ, một ứng dùng cho phép người dùng chọn texture có thể bỏ tất cả mọi thứ trừ texture image trong Binary glTF. Tài nguyên base64 vẫn dùng được, nhưng sẽ dùng nó là không tối ưu.
 
-For these resources, glTF requires either separate requests or extra space due to base64-encoding. Base64-encoding requires extra processing to decode and increases the file size (by ~33% for encoded resources). While gzip mitigates the file size increase, decompression and decoding still add significant loading time.
+### Đuôi File
 
-To solve this, a container format, _Binary glTF_ is introduced. In Binary glTF, a glTF asset (JSON, .bin, and images) can be stored in a binary blob. 
-
-This binary blob (which can be a file, for example) has the following structure:
-* A 12-byte preamble, entitled the `header`.
-* One or more `chunks` that contains JSON content and binary data.
-
-The `chunk` containing JSON can refer to external resources as usual, and can also reference resources stored within other `chunks`.
-
-For example, an application that wants to download textures on demand may embed everything except images in the Binary glTF. Embedded base64-encoded resources are also still supported, but it would be inefficient to use them.
-
-### File Extension
-
-The file extension to be used with Binary glTF is `.glb`.
+Đuôi của Binary glTF là `.glb`.
 
 ### MIME Type
 
-Use `model/gltf-binary`.
+Dùng `model/gltf-binary`.
 
 ## Binary glTF Layout
 
-Binary glTF is little endian. Figure 1 shows an example of a Binary glTF asset.
+Binary glTF là little endian. Hình 1 là một ví dụ của một Binary glTF asset.
 
-**Figure 1**: Binary glTF layout.
+**Hình 1**: Binary glTF layout.
 
 ![](figures/glb2.png)
 
-The following sections describe the structure more in detail.
+Những phần sau sẽ miêu tả cấu trúc này chi tiết hơn.
 
 ### Header
 
-The 12-byte header consists of three 4-byte entries:
+Cái header 12 byte này chứa 3 thành phần 4 byte:
 
 ```
 uint32 magic
@@ -1417,57 +1121,57 @@ uint32 version
 uint32 length
 ```
 
-* `magic` equals `0x46546C67`. It is ASCII string `glTF`, and can be used to identify data as Binary glTF.
+* `magic` có giá trị `0x46546C67`. Dịch theo mã ASCII thì nó là chuỗi  `glTF`, dùng để đánh dấu đây là dữ liệu có dạng Binary glTF.
 
-* `version` indicates the version of the Binary glTF container format. This specification defines version 2.
+* `version` là version của Binary glTF container (không phải của glTF JSON). Phiên bản hiện tại của doc này là version 2.
 
-* `length` is the total length of the Binary glTF, including Header and all Chunks, in bytes.
+* `length` là tổng kích cỡ của the Binary glTF, cộng hết kích cỡ của Header và tất cả Chunks, tính bằng byte.
 
-> **Implementation Note:** Client implementations that load GLB format should also check for the [asset version properties](#asset) in the JSON chunk, as the version specified in the GLB header only refers to the GLB container version.
+> **Implementation Note:** Ứng dụng load GLB nên kiểm tra [thuộc tính asset version](#asset) trong chunk JSON vì version trong chunk Header có thể khác version trong chunk JSON. Version trong chunk Header chỉ là version của cái GLB container.
 
 ### Chunks
 
-Each chunk has the following structure:
+Mỗi chunk có cấu trúc sau:
 ```
 uint32 chunkLength
 uint32 chunkType
 ubyte[] chunkData
 ```
 
-* `chunkLength` is the length of `chunkData`, in bytes.
+* `chunkLength` là kích cỡ của `chunkData`, theo byte, không tính `chunkLength` và `chunkType`.
 
-* `chunkType` indicates the type of chunk. See Table 1 for details.
+* `chunkType` đánh dấu type của chunk. Xem Bảng 1 để biết thêm.
 
-* `chunkData` is a binary payload of chunk.
+* `chunkData` là nơi chứa dữ liệu của chunk.
 
-The start and the end of each chunk must be aligned to 4-byte boundary. See chunks definitions for padding schemes. Chunks must appear in exactly the order given in the Table 1.
+Đầu và đuôi của mỗi chunk phải được canh theo những khoảng cách bội số của 4. Xem định nghĩa của chunk để biết pad như thế nào. Thứ tự của chunk phải theo chính xác Bảng 1.
 
 **Table 1**: Chunk types
 
-|  | Chunk Type | ASCII | Description | Occurrences |
+|  | Chunk Type | ASCII | Miêu Tả | Số Lượng |
 |----|------------|-------|-------------------------|-------------|
-| 1. | 0x4E4F534A | JSON | Structured JSON content | 1 |
+| 1. | 0x4E4F534A | JSON | Nội dung JSON | 1 |
 | 2. | 0x004E4942 | BIN | Binary buffer | 0 or 1 |
 
-Client implementations must ignore chunks with unknown types to enable glTF extensions to reference additional chunks with new types following the first two chunks.
+Ứng dụng phải lơ chunk có type lạ để cho phép glTF extension dùng type chunk mới đặt say hai chunk JSON với BIN.
 
 #### Structured JSON Content
 
-This chunk holds the structured glTF content description, as it would be provided within a .gltf file.
+Chunk này chứa dữ liệu glTF, y như trong một file .gltf bình thường.
 
-> **Implementation Note:** In a JavaScript implementation, the `TextDecoder` API can be used to extract the glTF content from the ArrayBuffer, and then the JSON can be parsed with `JSON.parse` as usual.
+> **Implementation Note:** Khi dùng JavaScript, cái API `TextDecoder` có thể được dùng để lấy nội dung glTF từ ArrayBuffer, và sau đó parse nội dung JSON với `JSON.parse` như bình thường. 
 
-This chunk must be the very first chunk of Binary glTF asset. By reading this chunk first, an implementation is able to progressively retrieve resources from subsequent chunks. This way, it is also possible to read only a selected subset of resources from a Binary glTF asset (for instance, the coarsest LOD of a mesh).
+Chunk này phải là chunk đầu tiêu trong Binary glTF ngay sau chunk Header. Chunk này cần được đọc trước để ứng dụng biết được cần đọc gì từ những chunk tiếp theo. Như vậy thì chỉ cần đọc những phần tài nguyên cần thiết trong Binary glTF.
 
-This chunk must be padded with trailing `Space` chars (`0x20`) to satisfy alignment requirements.  
+Chunk này phải được pad dùng ký tự trắng (`Space == 0x20`) để đúng quy ước.
 
 #### Binary buffer
 
-This chunk contains the binary payload for geometry, animation key frames, skins, and images. See glTF specification for details on referencing this chunk from JSON.
+Chunk này chứa dữ liệu binary như là geometry, animation, key frams, skins và hình ảnh. Đọc thông số của glTF để hiểu cách đọc chunk này trong JSON.
 
-This chunk must be the second chunk of the Binary glTF asset.
+Đây phải là chunk thứ hai trong Binary glTF asset sau chunk Header.
 
-This chunk must be padded with trailing zeros (`0x00`) to satisfy alignment requirements.
+Chunk này phải được pad bằng số 0 (`0x00`) để đúng quy ước.
 
 # Properties Reference
 
