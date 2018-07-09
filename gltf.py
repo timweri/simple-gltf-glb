@@ -187,7 +187,7 @@ class GLTF:
         new_primitive = {}
 
         properties_key = ["attributes", "indices", "material", "mode"]
-        properties_val = [self._resolve_mapping(inp=attributes, mapping=self.accessors_map), indices, material, mode]
+        properties_val = [attributes, indices, material, mode]
         for key, val in zip(properties_key, properties_val):
             if val is not None:
                 new_primitive[key] = self._resolve_mapping(inp=val, mapping=self.accessors_map)
@@ -201,7 +201,8 @@ class GLTF:
         """
         new_primitive = self._build_primitive(attributes=attributes,
                                               indices=indices,
-                                              material=material,
+                                              material=self._resolve_mapping(inp=material,
+                                                                             mapping=self.materials_map),
                                               mode=mode)
 
         self.primitives.append(new_primitive)
@@ -494,9 +495,9 @@ class GLTF:
     def to_dict(self):
         """Compile all properties and return a glTF asset <dict>"""
         gltf_asset = {}
-        properties_keys = ["scenes", "nodes", "meshes", "buffers", "bufferViews", "accessors", "asset"]
+        properties_keys = ["scenes", "nodes", "meshes", "buffers", "bufferViews", "accessors", "materials", "asset"]
         properties_vals = [self.scenes, self.nodes, self.meshes, self.buffers, self.bufferViews, self.accessors,
-                           self.asset]
+                           self.materials, self.asset]
 
         for key, val in zip(properties_keys, properties_vals):
             if val:
