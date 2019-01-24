@@ -1,5 +1,5 @@
 # Simple GLTF/GLB Builder Demo
-This is a simple demo toolkit written in Python 3 to build GLTF/GLB files according to Khronos Group's glTF 2.0 specifications. It was put together to show how to export simple 3D models in glTF/GLB format. It does not support every feature of glTF 2.0. Also, it is not fully comformant nor fully tested.
+This is a simple demo API written in Python 3 to build GLTF/GLB files according to Khronos Group's glTF 2.0 specifications. It was put together to show how to export simple 3D models in glTF/GLB format. It does not support every feature of glTF 2.0. Also, it is not fully comformant nor fully tested.
 
 ## Features
 - Support basic construction of important glTF asset properties: scenes, nodes, meshes, materials, buffers, bufferViews, accessors
